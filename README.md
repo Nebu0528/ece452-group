@@ -1,4 +1,4 @@
-# MyTeam
+# Titans
 
 We will add a project description here once we decide what to do!
 
