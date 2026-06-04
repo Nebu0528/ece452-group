@@ -1,0 +1,13 @@
+# Project Titans Week 5 Update
+
+June 1 - June 8
+
+- [All members] presented their ideas and picked "Discover UWaterloo"
+- [All members] wrote the project proposal document
+- Neel wrote the introduction and use cases scenario
+- Jerry drew the use cases diagram and worked on the use cases scenario
+- Sadiq worked on the requirements
+- Antarpreet worked on the timeline
+- Minh worked on design cases, specifically human values
+- Rohan worked on design cases, specifically tradeoffs
+- Team has discussed how to implement this project from a technical perspective, identifying tech stacks to use
