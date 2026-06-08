@@ -11,3 +11,4 @@ June 1 - June 8
 - Minh worked on design cases, specifically human values
 - Rohan worked on design cases, specifically tradeoffs
 - Team has discussed how to implement this project from a technical perspective, identifying tech stacks to use
+- Team met and started to build a prototype
