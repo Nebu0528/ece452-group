@@ -1,0 +1,4 @@
+# Project Titans Week 6 Update
+
+June 8 - June 15
+- [Jerry] setup project starter code and database implementation
