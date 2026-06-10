@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.tag import Tag
 from app.schemas.tag import TagCreate, TagOut
+from app.auth import require_roles
 
 router = APIRouter(prefix="/tags", tags=["tags"])
 
@@ -13,7 +14,7 @@ def list_tags(db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=TagOut)
-def create_tag(tag: TagCreate, db: Session = Depends(get_db)):
+def create_tag(tag: TagCreate, db: Session = Depends(get_db), _: int = Depends(require_roles("admin"))):
     db_tag = Tag(**tag.model_dump())
     db.add(db_tag)
     db.commit()
@@ -22,7 +23,7 @@ def create_tag(tag: TagCreate, db: Session = Depends(get_db)):
 
 
 @router.delete("/{tag_id}")
-def delete_tag(tag_id: int, db: Session = Depends(get_db)):
+def delete_tag(tag_id: int, db: Session = Depends(get_db), _: int = Depends(require_roles("admin"))):
     tag = db.query(Tag).filter(Tag.id == tag_id).first()
     if not tag:
         raise HTTPException(status_code=404, detail="Tag not found")

@@ -4,7 +4,7 @@ from app.database import get_db
 from app.models.event import Event
 from app.models.tag import Tag
 from app.schemas.event import EventCreate, EventOut
-from app.auth import get_current_user_id
+from app.auth import get_current_user_id, require_roles
 
 router = APIRouter(prefix="/events", tags=["events"])
 
@@ -39,7 +39,7 @@ def create_event(event: EventCreate, db: Session = Depends(get_db), user_id: int
 
 
 @router.patch("/{event_id}/review", response_model=EventOut)
-def review_event(event_id: int, db: Session = Depends(get_db), reviewer_id: int = Depends(get_current_user_id)):
+def review_event(event_id: int, db: Session = Depends(get_db), reviewer_id: int = Depends(require_roles("organizer", "admin"))):
     event = db.query(Event).filter(Event.id == event_id).first()
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
@@ -50,7 +50,7 @@ def review_event(event_id: int, db: Session = Depends(get_db), reviewer_id: int 
 
 
 @router.delete("/{event_id}")
-def delete_event(event_id: int, db: Session = Depends(get_db)):
+def delete_event(event_id: int, db: Session = Depends(get_db), _: int = Depends(require_roles("organizer", "admin"))):
     event = db.query(Event).filter(Event.id == event_id).first()
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")

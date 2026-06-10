@@ -38,3 +38,15 @@ def get_current_user_id(token: str = Depends(oauth2_scheme)) -> int:
         return int(payload["sub"])
     except (JWTError, KeyError):
         raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+
+def require_roles(*roles: str):
+    def dependency(token: str = Depends(oauth2_scheme)):
+        try:
+            payload = decode_token(token)
+            if payload.get("role") not in roles:
+                raise HTTPException(status_code=403, detail="Insufficient permissions")
+            return int(payload["sub"])
+        except (JWTError, KeyError):
+            raise HTTPException(status_code=401, detail="Invalid or expired token")
+    return dependency
