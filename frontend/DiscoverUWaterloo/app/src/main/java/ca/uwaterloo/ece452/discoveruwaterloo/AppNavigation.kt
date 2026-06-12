@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,6 +20,7 @@ import androidx.navigation.compose.rememberNavController
 import ca.uwaterloo.ece452.discoveruwaterloo.data.UserRole
 import ca.uwaterloo.ece452.discoveruwaterloo.ui.auth.LoginScreen
 import ca.uwaterloo.ece452.discoveruwaterloo.ui.auth.RegisterScreen
+import kotlinx.coroutines.launch
 
 object Routes {
     const val LOGIN = "login"
@@ -54,6 +56,23 @@ fun AppNavigation(viewModel: AppViewModel) {
     }
 
     Scaffold(
+        topBar = {
+            if (currentRoute !in authRoutes) {
+                TopAppBar(
+                    title = { Text("DiscoverUW") },
+                    actions = {
+                        IconButton(onClick = {
+                            viewModel.logout()
+                            navController.navigate(Routes.LOGIN) {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        }) {
+                            Icon(Icons.Default.Logout, contentDescription = "Logout")
+                        }
+                    }
+                )
+            }
+        },
         bottomBar = {
             if (currentRoute !in authRoutes) {
                 NavigationBar {
@@ -82,10 +101,10 @@ fun AppNavigation(viewModel: AppViewModel) {
         ) {
             composable(Routes.LOGIN) {
                 LoginScreen(
-                    onLogin = { email, password ->
+                    onLogin = { email, password, onError ->
                         viewModel.login(email, password,
                             onSuccess = { navController.navigate(Routes.HOME) { popUpTo(Routes.LOGIN) { inclusive = true } } },
-                            onError = {}
+                            onError = onError
                         )
                     },
                     onNavigateToRegister = { navController.navigate(Routes.REGISTER) }
@@ -93,10 +112,10 @@ fun AppNavigation(viewModel: AppViewModel) {
             }
             composable(Routes.REGISTER) {
                 RegisterScreen(
-                    onRegister = { name, email, password, role ->
+                    onRegister = { name, email, password, role, onError ->
                         viewModel.register(name, email, password, role,
                             onSuccess = { navController.navigate(Routes.HOME) { popUpTo(Routes.LOGIN) { inclusive = true } } },
-                            onError = {}
+                            onError = onError
                         )
                     },
                     onNavigateToLogin = { navController.popBackStack() }
