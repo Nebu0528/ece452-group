@@ -36,6 +36,7 @@ data class BottomNavItem(val route: String, val label: String, val icon: ImageVe
 
 private val authRoutes = setOf(Routes.LOGIN, Routes.REGISTER)
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation(viewModel: AppViewModel) {
     val navController = rememberNavController()
