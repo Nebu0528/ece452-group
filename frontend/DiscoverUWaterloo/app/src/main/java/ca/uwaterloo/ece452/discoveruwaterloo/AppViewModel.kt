@@ -49,23 +49,21 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             runCatching {
                 val token = repository.login(email, password)
                 _token = token
-                // Decode user id from JWT sub claim
                 val userId = decodeUserId(token)
                 _currentUser.value = repository.getUser(userId, token)
                 repository.refreshEvents()
             }.onSuccess { onSuccess() }
-             .onFailure { onError(it.message ?: "Login failed") }
+             .onFailure { onError(parseError(it, "Login failed")) }
         }
     }
 
     fun register(name: String, email: String, password: String, role: UserRole, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             runCatching {
-                val user = repository.register(name, email, password, role)
-                // Auto-login after register
+                repository.register(name, email, password, role)
                 login(email, password, onSuccess, onError)
                 return@launch
-            }.onFailure { onError(it.message ?: "Registration failed") }
+            }.onFailure { onError(parseError(it, "Registration failed")) }
         }
     }
 
@@ -112,6 +110,15 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun toggleTag(tagId: Int) { /* TODO Person 3: filter logic */ }
+
+    // Extract FastAPI's `detail` field from HTTP error responses
+    private fun parseError(t: Throwable, fallback: String): String {
+        return try {
+            val body = (t as? retrofit2.HttpException)?.response()?.errorBody()?.string()
+            val detail = body?.let { org.json.JSONObject(it).optString("detail") }
+            if (!detail.isNullOrBlank()) detail else fallback
+        } catch (e: Exception) { fallback }
+    }
 
     // Decode user ID from JWT payload (no library needed — just base64 the middle segment)
     private fun decodeUserId(token: String): Int {
