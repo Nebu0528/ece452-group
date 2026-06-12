@@ -2,3 +2,9 @@
 
 June 8 - June 15
 - [Jerry] setup project starter code and database implementation
+- [Sadiq] implemented navigation shell, auth screens, and data layer
+  - Added email-based login/register with @uwaterloo.ca validation
+  - Set up Room DB, Retrofit client, AppViewModel with API calls
+  - Navigation with role-based bottom nav (organizer/admin tabs only shown when applicable)
+  - UW gold/black theme applied
+  - Backend updated to use email field on User model (migration 0002)
