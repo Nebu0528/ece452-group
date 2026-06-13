@@ -128,7 +128,7 @@ fun AppNavigation(viewModel: AppViewModel) {
                 )
             }
             composable(Routes.HOME) { Text("Home — Person 3") }
-            composable(Routes.MAP) { Text("Map — Person 5") }
+            composable(Routes.MAP) { ca.uwaterloo.ece452.discoveruwaterloo.ui.map.MapScreen(viewModel) }
             composable(Routes.PLANNER) { Text("Planner — Person 4") }
             composable(Routes.ORGANIZER) { Text("Create Event — Person 6") }
             composable(Routes.ADMIN) { Text("Admin — Person 6") }
