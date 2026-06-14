@@ -73,10 +73,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         _plannerEvents.value = emptyList()
     }
 
-    fun createEvent(name: String, description: String?, location: String?, tagIds: List<Int>, onError: (String) -> Unit) {
+    fun createEvent(name: String, description: String?, location: String?, lat: Double?, lng: Double?, tagIds: List<Int>, onError: (String) -> Unit) {
         val token = _token ?: return onError("Not logged in")
         viewModelScope.launch {
-            runCatching { repository.createEvent(name, description, location, tagIds, token) }
+            runCatching { repository.createEvent(name, description, location, lat, lng, tagIds, token) }
                 .onSuccess { repository.refreshEvents() }
                 .onFailure { onError(it.message ?: "Failed to create event") }
         }

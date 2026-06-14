@@ -10,6 +10,8 @@ data class EventEntity(
     val name: String,
     val description: String?,
     val location: String?,
+    val lat: Double?,
+    val lng: Double?,
     val date: String?,
     val userId: Int,
     val reviewerId: Int?,

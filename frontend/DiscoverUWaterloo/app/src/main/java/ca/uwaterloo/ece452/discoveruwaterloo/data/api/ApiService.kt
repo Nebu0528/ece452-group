@@ -14,13 +14,13 @@ data class UserResponse(val id: Int, val name: String, val email: String, val ro
 data class TagResponse(val id: Int, val name: String, val description: String?)
 data class EventResponse(
     val id: Int, val name: String, val description: String?,
-    val location: String?, @SerializedName("user_id") val userId: Int,
+    val location: String?, val lat: Double?, val lng: Double?, @SerializedName("user_id") val userId: Int,
     @SerializedName("reviewer_id") val reviewerId: Int?,
     val tags: List<TagResponse> = emptyList()
 )
 data class EventCreateRequest(
     val name: String, val description: String?,
-    val location: String?, @SerializedName("tag_ids") val tagIds: List<Int> = emptyList()
+    val location: String?, val lat: Double?, val lng: Double?, @SerializedName("tag_ids") val tagIds: List<Int> = emptyList()
 )
 
 interface ApiService {

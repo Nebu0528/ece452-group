@@ -6,11 +6,14 @@ enum class EventStatus { PENDING, APPROVED, REJECTED }
 
 data class Tag(val id: Int, val name: String)
 
+data class EventLocation(val lat: Double, val lng: Double)
+
 data class Event(
     val id: Int,
     val name: String,
     val description: String?,
     val location: String?,
+    val locationCoords: EventLocation? = null,
     val date: String?,
     val userId: Int,
     val reviewerId: Int?,
