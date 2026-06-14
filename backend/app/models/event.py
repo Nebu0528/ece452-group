@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Table
+from sqlalchemy import Column, Integer, String, ForeignKey, Table, Float
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -17,6 +17,8 @@ class Event(Base):
     name = Column(String, nullable=False)
     description = Column(String)
     location = Column(String)
+    lat = Column(Float, nullable=True)
+    lng = Column(Float, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     reviewer_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
