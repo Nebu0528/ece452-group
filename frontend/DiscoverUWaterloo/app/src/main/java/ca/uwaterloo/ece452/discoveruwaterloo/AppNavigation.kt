@@ -20,9 +20,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import ca.uwaterloo.ece452.discoveruwaterloo.data.UserRole
 import ca.uwaterloo.ece452.discoveruwaterloo.ui.auth.LoginScreen
 import ca.uwaterloo.ece452.discoveruwaterloo.ui.auth.RegisterScreen
+import ca.uwaterloo.ece452.discoveruwaterloo.ui.events.EventDetailScreen
+import ca.uwaterloo.ece452.discoveruwaterloo.ui.planner.PlannerScreen
 import kotlinx.coroutines.launch
 
 object Routes {
@@ -33,6 +37,8 @@ object Routes {
     const val PLANNER = "planner"
     const val ORGANIZER = "organizer"
     const val ADMIN = "admin"
+    const val EVENT_DETAIL = "event_detail/{eventId}"
+    fun eventDetail(eventId: Int) = "event_detail/$eventId"
 }
 
 data class BottomNavItem(val route: String, val label: String, val icon: ImageVector)
@@ -129,7 +135,23 @@ fun AppNavigation(viewModel: AppViewModel) {
             }
             composable(Routes.HOME) { Text("Home — Person 3") }
             composable(Routes.MAP) { ca.uwaterloo.ece452.discoveruwaterloo.ui.map.MapScreen(viewModel) }
-            composable(Routes.PLANNER) { Text("Planner — Person 4") }
+            composable(Routes.PLANNER) {
+                PlannerScreen(
+                    viewModel = viewModel,
+                    onEventClick = { eventId -> navController.navigate(Routes.eventDetail(eventId)) }
+                )
+            }
+            composable(
+                route = Routes.EVENT_DETAIL,
+                arguments = listOf(navArgument("eventId") { type = NavType.IntType })
+            ) { backStackEntry ->
+                val eventId = backStackEntry.arguments?.getInt("eventId") ?: return@composable
+                EventDetailScreen(
+                    eventId = eventId,
+                    viewModel = viewModel,
+                    onBack = { navController.popBackStack() }
+                )
+            }
             composable(Routes.ORGANIZER) { Text("Create Event — Person 6") }
             composable(Routes.ADMIN) { Text("Admin — Person 6") }
         }
