@@ -8,3 +8,8 @@ June 8 - June 15
   - Navigation with role-based bottom nav (organizer/admin tabs only shown when applicable)
   - UW gold/black theme applied
   - Backend updated to use email field on User model (migration 0002)
+  - [Neel] implemented the events detail and planner page
+    - planner page shows events that the user has signed up for 
+    - the user can view the details in the events such as location, time, club etc...
+    - user can remove events from planner
+  
