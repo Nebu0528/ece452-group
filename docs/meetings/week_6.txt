@@ -3,7 +3,7 @@
 June 8 - June 15
 - [Jerry] setup project starter code and database implementation
   - Set up Postgres database with Python seed script and Alembic migration management
-  = Created initial tables and specs for users, events, tags tables
+  - Created initial tables and specs for users, events, tags tables
   - Added default CRUD operations in FastAPI for database tables
   - Implemented basic authentication tokens for users
 - [Sadiq] implemented navigation shell, auth screens, and data layer
