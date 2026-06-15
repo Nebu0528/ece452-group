@@ -157,8 +157,12 @@ fun AppNavigation(viewModel: AppViewModel) {
                     onBack = { navController.popBackStack() }
                 )
             }
-            composable(Routes.ORGANIZER) { Text("Create Event — Person 6") }
-            composable(Routes.ADMIN) { Text("Admin — Person 6") }
+            composable(Routes.ORGANIZER) {
+                ca.uwaterloo.ece452.discoveruwaterloo.ui.organizer.CreateEventScreen(viewModel = viewModel)
+            }
+            composable(Routes.ADMIN) {
+                ca.uwaterloo.ece452.discoveruwaterloo.ui.admin.AdminScreen(viewModel = viewModel)
+            }
         }
     }
 }

@@ -25,4 +25,9 @@ June 8 - June 15
     - Set up map overlays to dynamically plot event pins using latitude and longitude coordinates retrieved from the backend database/API.
     - Configured interactive marker info bubbles to display the event name and date/location popup upon tapping a pin.
     - Added coarse and fine location permissions to the Android manifest, defaulting the map view's starting focus on the UWaterloo campus.
-  
+- [Antarpreet] implemented organizer event creation and admin review screens
+    - Created CreateEventScreen with required name and location fields, optional description, and tag selection via filter chips
+    - Integrated OSMDroid map picker overlay: tapping the location pin icon opens a full map dialog where organizers can drop a pin to set lat/lng coordinates
+    - Created AdminScreen showing list of pending events with approve and reject buttons, wired to viewModel.approveEvent/rejectEvent
+    - Updated AppNavigation to replace Person 6 stubs with real composables; screens appear only for ORGANIZER and ADMIN roles respectively
+
