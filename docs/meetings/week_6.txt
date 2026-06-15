@@ -16,10 +16,10 @@ June 8 - June 15
     - Display all Event Categories (Tags) on the top of the UI, which are able to toggle
     - Display Events as a lazy list, based on the above category filter
     - on select, went into details of the event
-  - [Neel] implemented the events detail and planner page
-    - planner page shows events that the user has signed up for 
-    - the user can view the details in the events such as location, time, club etc...
-    - user can remove events from planner
+- [Neel] implemented the events detail and planner page
+  - planner page shows events that the user has signed up for 
+  - the user can view the details in the events such as location, time, club etc...
+  - user can remove events from planner
 - [Rohan] implemented the map screen and location services
     - Integrated the OSMDroid map view into Jetpack Compose using the AndroidView wrapper.
     - Set up map overlays to dynamically plot event pins using latitude and longitude coordinates retrieved from the backend database/API.
