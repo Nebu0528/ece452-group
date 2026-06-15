@@ -20,4 +20,9 @@ June 8 - June 15
     - planner page shows events that the user has signed up for 
     - the user can view the details in the events such as location, time, club etc...
     - user can remove events from planner
+- [Rohan] implemented the map screen and location services
+    - Integrated the OSMDroid map view into Jetpack Compose using the AndroidView wrapper.
+    - Set up map overlays to dynamically plot event pins using latitude and longitude coordinates retrieved from the backend database/API.
+    - Configured interactive marker info bubbles to display the event name and date/location popup upon tapping a pin.
+    - Added coarse and fine location permissions to the Android manifest, defaulting the map view's starting focus on the UWaterloo campus.
   
