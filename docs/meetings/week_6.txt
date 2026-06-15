@@ -2,6 +2,10 @@
 
 June 8 - June 15
 - [Jerry] setup project starter code and database implementation
+  - Set up Postgres database with Python seed script and Alembic migration management
+  - Created initial tables and specs for users, events, tags tables
+  - Added default CRUD operations in FastAPI for database tables
+  - Implemented basic authentication tokens for users
 - [Sadiq] implemented navigation shell, auth screens, and data layer
   - Added email-based login/register with @uwaterloo.ca validation
   - Set up Room DB, Retrofit client, AppViewModel with API calls
@@ -12,3 +16,8 @@ June 8 - June 15
     - Display all Event Categories (Tags) on the top of the UI, which are able to toggle
     - Display Events as a lazy list, based on the above category filter
     - on select, went into details of the event
+  - [Neel] implemented the events detail and planner page
+    - planner page shows events that the user has signed up for 
+    - the user can view the details in the events such as location, time, club etc...
+    - user can remove events from planner
+  
