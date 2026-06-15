@@ -23,9 +23,24 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val _events = MutableStateFlow<List<Event>>(emptyList())
     val events: StateFlow<List<Event>> = _events
 
-    val filteredEvents: StateFlow<List<Event>> = _events
-        .map { list -> list.filter { it.status == EventStatus.APPROVED || _currentUser.value?.role == UserRole.ADMIN } }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    private val _availableTags = MutableStateFlow<List<Tag>>(emptyList())
+    val availableTags: StateFlow<List<Tag>> = _availableTags
+
+    private val _selectedTags = MutableStateFlow<Set<Int>>(emptySet())
+    val selectedTags: StateFlow<Set<Int>> = _selectedTags
+
+    val filteredEvents: StateFlow<List<Event>> = combine(_events, _currentUser, _selectedTags, _availableTags) { events, user, selectedTags, tags ->
+        events.map { event ->
+            // Fill in tag names from availableTags if they are empty (happens when loading from Room)
+            if (event.tags.any { it.name.isEmpty() }) {
+                event.copy(tags = event.tags.map { t -> tags.find { it.id == t.id } ?: t })
+            } else event
+        }.filter { event ->
+            val matchesRole = event.status == EventStatus.APPROVED || user?.role == UserRole.ADMIN
+            val matchesTags = selectedTags.isEmpty() || event.tags.any { it.id in selectedTags }
+            matchesRole && matchesTags
+        }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     val pendingEvents: StateFlow<List<Event>> = _events
         .map { list -> list.filter { it.status == EventStatus.PENDING } }
@@ -41,6 +56,14 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         // Observe local Room cache
         viewModelScope.launch {
             repository.getEvents().collect { _events.value = it }
+        }
+        fetchTags()
+    }
+
+    private fun fetchTags() {
+        viewModelScope.launch {
+            runCatching { repository.getTags() }
+                .onSuccess { _availableTags.value = it }
         }
     }
 
@@ -109,7 +132,13 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         _plannerEvents.value = _plannerEvents.value.filter { it.id != event.id }
     }
 
-    fun toggleTag(tagId: Int) { /* TODO Person 3: filter logic */ }
+    fun toggleTag(tagId: Int) {
+        if (_selectedTags.value.contains(tagId)) {
+            _selectedTags.value = _selectedTags.value - tagId
+        } else {
+            _selectedTags.value = _selectedTags.value + tagId
+        }
+    }
 
     // Extract FastAPI's `detail` field from HTTP error responses
     private fun parseError(t: Throwable, fallback: String): String {
