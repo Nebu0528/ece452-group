@@ -133,7 +133,12 @@ fun AppNavigation(viewModel: AppViewModel) {
                     onNavigateToLogin = { navController.popBackStack() }
                 )
             }
-            composable(Routes.HOME) { Text("Home — Person 3") }
+            composable(Routes.HOME) {
+                ca.uwaterloo.ece452.discoveruwaterloo.ui.events.EventFeedScreen(
+                    viewModel = viewModel,
+                    onEventClick = { eventId -> navController.navigate(Routes.eventDetail(eventId)) },
+                )
+            }
             composable(Routes.MAP) { ca.uwaterloo.ece452.discoveruwaterloo.ui.map.MapScreen(viewModel) }
             composable(Routes.PLANNER) {
                 PlannerScreen(

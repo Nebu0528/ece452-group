@@ -40,6 +40,8 @@ class EventRepository(private val api: ApiService, private val db: EventDatabase
     suspend fun deleteEvent(id: Int, token: String) = api.deleteEvent(id, "Bearer $token")
 
     suspend fun reviewEvent(id: Int, token: String): Event = api.reviewEvent(id, "Bearer $token").toEvent()
+
+    suspend fun getTags(): List<Tag> = api.getTags().map { Tag(it.id, it.name) }
 }
 
 // Mapping helpers
