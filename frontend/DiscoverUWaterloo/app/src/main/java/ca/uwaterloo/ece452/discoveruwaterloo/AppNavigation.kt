@@ -136,13 +136,7 @@ fun AppNavigation(viewModel: AppViewModel) {
             composable(Routes.HOME) {
                 ca.uwaterloo.ece452.discoveruwaterloo.ui.events.EventFeedScreen(
                     viewModel = viewModel,
-                    onEventClick = { eventId -> navController.navigate(Routes.eventDetail(eventId)) },
-                    onLogout = {
-                        viewModel.logout()
-                        navController.navigate(Routes.LOGIN) {
-                            popUpTo(0) { inclusive = true }
-                        }
-                    }
+                    onEventClick = { eventId -> navController.navigate(Routes.eventDetail(eventId)) }
                 )
             }
             composable(Routes.MAP) { ca.uwaterloo.ece452.discoveruwaterloo.ui.map.MapScreen(viewModel) }
