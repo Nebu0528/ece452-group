@@ -3,3 +3,4 @@
 June 22 - Ongoing
 - [All members] in week 7 met and practice our presentations/use case demo
 - [Minh] fixed a bug where the tags do not show on the event
+- [Neel] updated the schema to include a start time and duration for the events, ensured proper db migration for the fields
