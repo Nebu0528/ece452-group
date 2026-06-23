@@ -20,22 +20,23 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     private var _token: String? = null
 
-    private val _events = MutableStateFlow<List<Event>>(emptyList())
-    val events: StateFlow<List<Event>> = _events
-
     private val _availableTags = MutableStateFlow<List<Tag>>(emptyList())
     val availableTags: StateFlow<List<Tag>> = _availableTags
 
     private val _selectedTags = MutableStateFlow<Set<Int>>(emptySet())
     val selectedTags: StateFlow<Set<Int>> = _selectedTags
 
-    val filteredEvents: StateFlow<List<Event>> = combine(_events, _currentUser, _selectedTags, _availableTags) { events, user, selectedTags, tags ->
+    private val _events = MutableStateFlow<List<Event>>(emptyList())
+    val events: StateFlow<List<Event>> = combine(_events, _availableTags) { events, tags ->
         events.map { event ->
-            // Fill in tag names from availableTags if they are empty (happens when loading from Room)
             if (event.tags.any { it.name.isEmpty() }) {
                 event.copy(tags = event.tags.map { t -> tags.find { it.id == t.id } ?: t })
             } else event
-        }.filter { event ->
+        }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    val filteredEvents: StateFlow<List<Event>> = combine(events, _currentUser, _selectedTags) { events, user, selectedTags ->
+        events.filter { event ->
             val matchesRole = event.status == EventStatus.APPROVED || user?.role == UserRole.ADMIN
             val matchesTags = selectedTags.isEmpty() || event.tags.any { it.id in selectedTags }
             matchesRole && matchesTags
