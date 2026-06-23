@@ -23,25 +23,13 @@ import ca.uwaterloo.ece452.discoveruwaterloo.data.EventStatus
 @Composable
 fun EventFeedScreen(
     viewModel: AppViewModel,
-    onEventClick: (Int) -> Unit,
-    onLogout: () -> Unit
+    onEventClick: (Int) -> Unit
 ) {
     val events by viewModel.filteredEvents.collectAsState()
     val availableTags by viewModel.availableTags.collectAsState()
     val selectedTags by viewModel.selectedTags.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Events", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-            TextButton(onClick = onLogout) {
-                Text("Logout")
-            }
-        }
-
         // Tag Filter Chips
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
