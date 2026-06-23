@@ -1,0 +1,5 @@
+# Project Titans Week 8 Update
+
+June 22 - Ongoing
+- [All members] in week 7 met and practice our presentations/use case demo
+- [Minh] fixed a bug where the tags do not show on the event
