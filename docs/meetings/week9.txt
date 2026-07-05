@@ -1,0 +1,1 @@
+[Minh] : started to look into adding images on the display and search bar for events. Also updating databse with timestamps of events
