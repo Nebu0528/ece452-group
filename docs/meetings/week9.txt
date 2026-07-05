@@ -3,3 +3,4 @@
 June 29 - July 6
 [Neel] : coordinated group meeting, provided a roadmap for other developers to proceed with their development
 [Minh] : started to look into adding images on the display and search bar for events. Also updating databse with timestamps of events
+[Rohan] : implemented better map routing via google maps and added the events filter to the map
