@@ -162,7 +162,7 @@ fun AppNavigation(viewModel: AppViewModel) {
                             onError = onError
                         )
                     },
-                    onResend = { onError -> viewModel.resendCode(email, onError) }
+                    onResend = { onSuccess, onError -> viewModel.resendCode(email, onSuccess, onError) }
                 )
             }
             composable(Routes.HOME) {

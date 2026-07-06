@@ -98,9 +98,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun resendCode(email: String, onError: (String) -> Unit) {
+    fun resendCode(email: String, onSuccess: () -> Unit = {}, onError: (String) -> Unit) {
         viewModelScope.launch {
             runCatching { repository.resendCode(email) }
+                .onSuccess { onSuccess() }
                 .onFailure { onError(parseError(it, "Failed to resend code")) }
         }
     }

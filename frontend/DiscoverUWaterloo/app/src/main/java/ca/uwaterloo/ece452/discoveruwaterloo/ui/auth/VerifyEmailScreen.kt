@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 fun VerifyEmailScreen(
     email: String,
     onVerify: (code: String, onError: (String) -> Unit) -> Unit,
-    onResend: (onError: (String) -> Unit) -> Unit
+    onResend: (onSuccess: () -> Unit, onError: (String) -> Unit) -> Unit
 ) {
     var code by remember { mutableStateOf("") }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -62,10 +62,10 @@ fun VerifyEmailScreen(
 
             Spacer(Modifier.height(12.dp))
             TextButton(onClick = {
-                onResend { error ->
-                    scope.launch { snackbarHostState.showSnackbar(error) }
-                }
-                scope.launch { snackbarHostState.showSnackbar("Code resent!") }
+                onResend(
+                    { scope.launch { snackbarHostState.showSnackbar("Code resent!") } },
+                    { error -> scope.launch { snackbarHostState.showSnackbar(error) } }
+                )
             }) {
                 Text("Didn't get it? Resend code")
             }
