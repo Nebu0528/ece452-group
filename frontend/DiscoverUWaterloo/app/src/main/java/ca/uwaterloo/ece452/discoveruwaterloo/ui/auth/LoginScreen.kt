@@ -14,11 +14,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun LoginScreen(
     onLogin: (email: String, password: String, onError: (String) -> Unit) -> Unit,
-    onNavigateToRegister: () -> Unit
+    onNavigateToRegister: () -> Unit,
+    onNavigateToVerify: (email: String) -> Unit
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var emailError by remember { mutableStateOf(false) }
+    var showVerifyPrompt by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -33,7 +35,7 @@ fun LoginScreen(
 
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it; emailError = false },
+                onValueChange = { email = it; emailError = false; showVerifyPrompt = false },
                 label = { Text("UWaterloo Email") },
                 isError = emailError,
                 supportingText = { if (emailError) Text("Must be a @uwaterloo.ca email") },
@@ -57,15 +59,32 @@ fun LoginScreen(
             Button(
                 onClick = {
                     if (!email.endsWith("@uwaterloo.ca")) { emailError = true; return@Button }
+                    showVerifyPrompt = false
                     onLogin(email, password) { error ->
-                        scope.launch { snackbarHostState.showSnackbar(error) }
+                        if (error.contains("verify", ignoreCase = true)) {
+                            showVerifyPrompt = true
+                        } else {
+                            scope.launch { snackbarHostState.showSnackbar(error) }
+                        }
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
             ) { Text("Log In") }
 
-            Spacer(Modifier.height(12.dp))
-            TextButton(onClick = onNavigateToRegister) { Text("Don't have an account? Register") }
+            if (showVerifyPrompt) {
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    "Your email isn't verified yet.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error
+                )
+                TextButton(onClick = { onNavigateToVerify(email) }) {
+                    Text("Verify your email")
+                }
+            } else {
+                Spacer(Modifier.height(12.dp))
+                TextButton(onClick = onNavigateToRegister) { Text("Don't have an account? Register") }
+            }
         }
     }
 }

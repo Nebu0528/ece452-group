@@ -2,13 +2,17 @@ package ca.uwaterloo.ece452.discoveruwaterloo.data.api
 
 import ca.uwaterloo.ece452.discoveruwaterloo.BuildConfig
 import com.google.gson.annotations.SerializedName
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
+import java.util.concurrent.TimeUnit
 
 // Request/Response DTOs matching FastAPI schemas
 data class LoginRequest(val email: String, val password: String)
 data class RegisterRequest(val name: String, val email: String, val password: String, val role: String)
+data class VerifyEmailRequest(val email: String, val code: String)
+data class MessageResponse(val message: String)
 data class TokenResponse(@SerializedName("access_token") val accessToken: String)
 data class UserResponse(val id: Int, val name: String, val email: String, val role: String)
 data class TagResponse(val id: Int, val name: String, val description: String?)
@@ -29,6 +33,12 @@ interface ApiService {
 
     @POST("users/register")
     suspend fun register(@Body request: RegisterRequest): UserResponse
+
+    @POST("users/verify-email")
+    suspend fun verifyEmail(@Body request: VerifyEmailRequest): MessageResponse
+
+    @POST("users/resend-code")
+    suspend fun resendCode(@Body request: VerifyEmailRequest): MessageResponse
 
     @GET("users/{id}")
     suspend fun getUser(@Path("id") id: Int, @Header("Authorization") token: String): UserResponse
@@ -54,8 +64,15 @@ interface ApiService {
 
 object RetrofitClient {
     val api: ApiService by lazy {
+        val client = OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
+
         Retrofit.Builder()
             .baseUrl(BuildConfig.BASE_URL + "/")
+            .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ApiService::class.java)
