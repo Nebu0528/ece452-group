@@ -85,9 +85,24 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             runCatching {
                 repository.register(name, email, password, role)
-                login(email, password, onSuccess, onError)
-                return@launch
-            }.onFailure { onError(parseError(it, "Registration failed")) }
+            }.onSuccess { onSuccess() }
+             .onFailure { onError(parseError(it, "Registration failed")) }
+        }
+    }
+
+    fun verifyEmail(email: String, code: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            runCatching { repository.verifyEmail(email, code) }
+                .onSuccess { onSuccess() }
+                .onFailure { onError(parseError(it, "Verification failed")) }
+        }
+    }
+
+    fun resendCode(email: String, onSuccess: () -> Unit = {}, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            runCatching { repository.resendCode(email) }
+                .onSuccess { onSuccess() }
+                .onFailure { onError(parseError(it, "Failed to resend code")) }
         }
     }
 

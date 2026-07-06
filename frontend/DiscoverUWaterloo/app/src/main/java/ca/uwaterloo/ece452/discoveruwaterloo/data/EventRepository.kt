@@ -5,6 +5,7 @@ import ca.uwaterloo.ece452.discoveruwaterloo.data.api.EventCreateRequest
 import ca.uwaterloo.ece452.discoveruwaterloo.data.api.EventResponse
 import ca.uwaterloo.ece452.discoveruwaterloo.data.api.LoginRequest
 import ca.uwaterloo.ece452.discoveruwaterloo.data.api.RegisterRequest
+import ca.uwaterloo.ece452.discoveruwaterloo.data.api.VerifyEmailRequest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -18,6 +19,12 @@ class EventRepository(private val api: ApiService, private val db: EventDatabase
         val resp = api.register(RegisterRequest(name, email, password, role.name.lowercase()))
         return User(resp.id, resp.name, resp.email, UserRole.valueOf(resp.role.uppercase()))
     }
+
+    suspend fun verifyEmail(email: String, code: String): String =
+        api.verifyEmail(VerifyEmailRequest(email, code)).message
+
+    suspend fun resendCode(email: String): String =
+        api.resendCode(VerifyEmailRequest(email, "")).message
 
     suspend fun getUser(id: Int, token: String): User {
         val resp = api.getUser(id, "Bearer $token")

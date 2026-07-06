@@ -1,8 +1,8 @@
 package ca.uwaterloo.ece452.discoveruwaterloo
 
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -16,22 +16,24 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import ca.uwaterloo.ece452.discoveruwaterloo.data.UserRole
 import ca.uwaterloo.ece452.discoveruwaterloo.ui.auth.LoginScreen
 import ca.uwaterloo.ece452.discoveruwaterloo.ui.auth.RegisterScreen
+import ca.uwaterloo.ece452.discoveruwaterloo.ui.auth.VerifyEmailScreen
 import ca.uwaterloo.ece452.discoveruwaterloo.ui.events.EventDetailScreen
 import ca.uwaterloo.ece452.discoveruwaterloo.ui.planner.PlannerScreen
-import kotlinx.coroutines.launch
 
 object Routes {
     const val LOGIN = "login"
     const val REGISTER = "register"
+    const val VERIFY_EMAIL = "verify_email/{email}"
+    fun verifyEmail(email: String) = "verify_email/${java.net.URLEncoder.encode(email, "UTF-8")}"
     const val HOME = "home"
     const val MAP = "map"
     const val PLANNER = "planner"
@@ -43,14 +45,17 @@ object Routes {
 
 data class BottomNavItem(val route: String, val label: String, val icon: ImageVector)
 
-private val authRoutes = setOf(Routes.LOGIN, Routes.REGISTER)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation(viewModel: AppViewModel) {
     val navController = rememberNavController()
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
     val currentUser by viewModel.currentUser.collectAsState()
+
+    // Hide nav chrome on all auth screens
+    val isAuthRoute = currentRoute == Routes.LOGIN
+        || currentRoute == Routes.REGISTER
+        || currentRoute?.startsWith("verify_email/") == true
 
     val bottomNavItems = remember(currentUser) {
         buildList {
@@ -67,7 +72,7 @@ fun AppNavigation(viewModel: AppViewModel) {
 
     Scaffold(
         topBar = {
-            if (currentRoute !in authRoutes) {
+            if (!isAuthRoute) {
                 TopAppBar(
                     title = { Text("DiscoverUW") },
                     actions = {
@@ -84,7 +89,7 @@ fun AppNavigation(viewModel: AppViewModel) {
             }
         },
         bottomBar = {
-            if (currentRoute !in authRoutes) {
+            if (!isAuthRoute) {
                 NavigationBar {
                     bottomNavItems.forEach { item ->
                         NavigationBarItem(
@@ -119,18 +124,45 @@ fun AppNavigation(viewModel: AppViewModel) {
                             onError = onError
                         )
                     },
-                    onNavigateToRegister = { navController.navigate(Routes.REGISTER) }
+                    onNavigateToRegister = { navController.navigate(Routes.REGISTER) },
+                    onNavigateToVerify = { email -> navController.navigate(Routes.verifyEmail(email)) }
                 )
             }
             composable(Routes.REGISTER) {
                 RegisterScreen(
                     onRegister = { name, email, password, role, onError ->
                         viewModel.register(name, email, password, role,
-                            onSuccess = { navController.navigate(Routes.HOME) { popUpTo(Routes.LOGIN) { inclusive = true } } },
+                            onSuccess = {
+                                navController.navigate(Routes.verifyEmail(email)) {
+                                    popUpTo(Routes.REGISTER) { inclusive = true }
+                                }
+                            },
                             onError = onError
                         )
                     },
                     onNavigateToLogin = { navController.popBackStack() }
+                )
+            }
+            composable(
+                route = Routes.VERIFY_EMAIL,
+                arguments = listOf(navArgument("email") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val email = java.net.URLDecoder.decode(
+                    backStackEntry.arguments?.getString("email") ?: "", "UTF-8"
+                )
+                VerifyEmailScreen(
+                    email = email,
+                    onVerify = { code, onError ->
+                        viewModel.verifyEmail(email, code,
+                            onSuccess = {
+                                navController.navigate(Routes.LOGIN) {
+                                    popUpTo(0) { inclusive = true }
+                                }
+                            },
+                            onError = onError
+                        )
+                    },
+                    onResend = { onSuccess, onError -> viewModel.resendCode(email, onSuccess, onError) }
                 )
             }
             composable(Routes.HOME) {
