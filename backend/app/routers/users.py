@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import threading
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -12,6 +13,14 @@ from app.auth import create_access_token, hash_password, verify_password
 router = APIRouter(prefix="/users", tags=["users"])
 
 CODE_EXPIRY_MINUTES = 10
+
+
+def _send_email_background(email: str, code: str):
+    try:
+        send_verification_email(email, code)
+    except Exception as e:
+        print(f"[WARN] Failed to send verification email to {email}: {e}")
+        print(f"[DEV] Verification code for {email}: {code}")
 
 
 @router.post("/register", response_model=UserOut)
@@ -35,15 +44,9 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_user)
 
-    try:
-        send_verification_email(db_user.email, code)
-    except Exception as e:
-        # Don't fail registration if email sending breaks — code is still in the DB
-        print(f"[WARN] Failed to send verification email to {db_user.email}: {e}")
-        print(f"[DEV] Verification code for {db_user.email}: {code}")
+    threading.Thread(target=_send_email_background, args=(db_user.email, code), daemon=True).start()
 
     return db_user
-
 
 @router.post("/verify-email")
 def verify_email(body: VerifyEmailRequest, db: Session = Depends(get_db)):
@@ -79,11 +82,7 @@ def resend_code(body: VerifyEmailRequest, db: Session = Depends(get_db)):
     user.verification_code_expires_at = datetime.utcnow() + timedelta(minutes=CODE_EXPIRY_MINUTES)
     db.commit()
 
-    try:
-        send_verification_email(user.email, code)
-    except Exception as e:
-        print(f"[WARN] Failed to resend verification email to {user.email}: {e}")
-        print(f"[DEV] Verification code for {user.email}: {code}")
+    threading.Thread(target=_send_email_background, args=(user.email, code), daemon=True).start()
     return {"message": "Code resent"}
 
 
