@@ -124,7 +124,8 @@ fun AppNavigation(viewModel: AppViewModel) {
                             onError = onError
                         )
                     },
-                    onNavigateToRegister = { navController.navigate(Routes.REGISTER) }
+                    onNavigateToRegister = { navController.navigate(Routes.REGISTER) },
+                    onNavigateToVerify = { email -> navController.navigate(Routes.verifyEmail(email)) }
                 )
             }
             composable(Routes.REGISTER) {
