@@ -2,9 +2,11 @@ package ca.uwaterloo.ece452.discoveruwaterloo.data.api
 
 import ca.uwaterloo.ece452.discoveruwaterloo.BuildConfig
 import com.google.gson.annotations.SerializedName
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
+import java.util.concurrent.TimeUnit
 
 // Request/Response DTOs matching FastAPI schemas
 data class LoginRequest(val email: String, val password: String)
@@ -62,8 +64,15 @@ interface ApiService {
 
 object RetrofitClient {
     val api: ApiService by lazy {
+        val client = OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
+
         Retrofit.Builder()
             .baseUrl(BuildConfig.BASE_URL + "/")
+            .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ApiService::class.java)
