@@ -9,8 +9,8 @@ class EventCreate(BaseModel):
     location: str | None = None
     lat: float | None = None
     lng: float | None = None
-    start_time: datetime | None = None
-    duration: int | None = None
+    start_time: datetime
+    duration: int
     schedule: str | None = None
     tag_ids: list[int] = []
 

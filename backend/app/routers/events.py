@@ -31,6 +31,8 @@ def create_event(event: EventCreate, db: Session = Depends(get_db), user_id: int
         location=event.location,
         lat=event.lat,
         lng=event.lng,
+        start_time=event.start_time,
+        duration=event.duration,
         user_id=user_id,
         tags=tags,
     )

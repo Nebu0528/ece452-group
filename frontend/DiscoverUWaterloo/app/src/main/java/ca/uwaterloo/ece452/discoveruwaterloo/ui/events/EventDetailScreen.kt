@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,6 +18,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import ca.uwaterloo.ece452.discoveruwaterloo.AppViewModel
 import ca.uwaterloo.ece452.discoveruwaterloo.data.EventStatus
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -93,6 +96,48 @@ fun EventDetailScreen(
                     tint = MaterialTheme.colorScheme.primary
                 )
                 Text(event.date, style = MaterialTheme.typography.bodyLarge)
+            }
+        }
+
+        // Start time
+        if (!event.startTime.isNullOrBlank()) {
+            val displayTime = runCatching {
+                val display = SimpleDateFormat("MMM d, yyyy h:mm a", Locale.getDefault())
+                display.format(SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).parse(event.startTime)!!)
+            }.getOrDefault(event.startTime)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Icon(
+                    Icons.Default.CalendarToday,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Text(displayTime, style = MaterialTheme.typography.bodyLarge)
+            }
+        }
+
+        // Duration
+        if (event.duration != null) {
+            val durationLabel = buildString {
+                val h = event.duration / 60
+                val m = event.duration % 60
+                if (h > 0) append("${h}h ")
+                if (m > 0) append("${m}m")
+            }.trim()
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Icon(
+                    Icons.Default.Schedule,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Text(durationLabel, style = MaterialTheme.typography.bodyLarge)
             }
         }
 
