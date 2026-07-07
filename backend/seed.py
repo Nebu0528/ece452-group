@@ -14,9 +14,9 @@ def seed():
             return
 
         # Users
-        admin = User(name="admin", email="admin@uwaterloo.ca", password=hash_password("admin123"), role=UserRole.ADMIN)
-        organizer = User(name="organizer", email="organizer@uwaterloo.ca", password=hash_password("organizer123"), role=UserRole.ORGANIZER)
-        student = User(name="student", email="student@uwaterloo.ca", password=hash_password("student123"), role=UserRole.BASIC)
+        admin = User(name="admin", email="admin@uwaterloo.ca", password=hash_password("admin123"), role=UserRole.ADMIN, is_verified=True)
+        organizer = User(name="organizer", email="organizer@uwaterloo.ca", password=hash_password("organizer123"), role=UserRole.ORGANIZER, is_verified=True)
+        student = User(name="student", email="student@uwaterloo.ca", password=hash_password("student123"), role=UserRole.BASIC, is_verified=True)
         db.add_all([admin, organizer, student])
         db.flush()
 
