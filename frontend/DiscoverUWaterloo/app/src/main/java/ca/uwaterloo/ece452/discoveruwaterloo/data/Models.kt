@@ -15,6 +15,8 @@ data class Event(
     val location: String?,
     val locationCoords: EventLocation? = null,
     val date: String?,
+    val startTime: String? = null,
+    val duration: Int? = null,
     val userId: Int,
     val reviewerId: Int?,
     val status: EventStatus = EventStatus.PENDING,

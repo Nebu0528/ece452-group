@@ -5,3 +5,4 @@ June 29 - July 6
 [Minh] : started to look into adding images on the display and search bar for events. Also updating databse with timestamps of events
 [Rohan] : implemented better map routing via google maps and added the events filter to the map
 [Sadiq] : added email verification logic (user receives an email with 6-digit code after registering). Appropriate error checking, snackbar messages, and UX.
+[Antarpreet] : added start time and duration fields to event creation for organizers

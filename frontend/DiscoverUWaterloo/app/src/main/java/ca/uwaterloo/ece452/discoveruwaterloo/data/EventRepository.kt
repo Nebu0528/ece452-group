@@ -41,8 +41,8 @@ class EventRepository(private val api: ApiService, private val db: EventDatabase
     fun getEvents(): Flow<List<Event>> =
         db.eventDao().getAllEvents().map { list -> list.map { it.toEvent() } }
 
-    suspend fun createEvent(name: String, description: String?, location: String?, lat: Double?, lng: Double?, tagIds: List<Int>, token: String): Event =
-        api.createEvent(EventCreateRequest(name, description, location, lat, lng, tagIds), "Bearer $token").toEvent()
+    suspend fun createEvent(name: String, description: String?, location: String?, lat: Double?, lng: Double?, startTime: String, duration: Int, tagIds: List<Int>, token: String): Event =
+        api.createEvent(EventCreateRequest(name, description, location, lat, lng, startTime, duration, tagIds), "Bearer $token").toEvent()
 
     suspend fun deleteEvent(id: Int, token: String) = api.deleteEvent(id, "Bearer $token")
 
@@ -54,7 +54,8 @@ class EventRepository(private val api: ApiService, private val db: EventDatabase
 // Mapping helpers
 private fun EventResponse.toEntity() = EventEntity(
     id = id, name = name, description = description, location = location,
-    lat = lat, lng = lng, date = null, userId = userId, reviewerId = reviewerId,
+    lat = lat, lng = lng, date = null, startTime = startTime, duration = duration,
+    userId = userId, reviewerId = reviewerId,
     status = if (reviewerId != null) EventStatus.APPROVED.name else EventStatus.PENDING.name,
     tagIds = tags.joinToString(",") { it.id.toString() }
 )
@@ -62,7 +63,8 @@ private fun EventResponse.toEntity() = EventEntity(
 private fun EventEntity.toEvent() = Event(
     id = id, name = name, description = description, location = location,
     locationCoords = if (lat != null && lng != null) EventLocation(lat, lng) else null,
-    date = date, userId = userId, reviewerId = reviewerId,
+    date = date, startTime = startTime, duration = duration,
+    userId = userId, reviewerId = reviewerId,
     status = EventStatus.valueOf(status),
     tags = tagIds.split(",").filter { it.isNotEmpty() }.map { Tag(it.toInt(), "") }
 )
@@ -70,7 +72,8 @@ private fun EventEntity.toEvent() = Event(
 private fun EventResponse.toEvent() = Event(
     id = id, name = name, description = description, location = location,
     locationCoords = if (lat != null && lng != null) EventLocation(lat, lng) else null,
-    date = null, userId = userId, reviewerId = reviewerId,
+    date = null, startTime = startTime, duration = duration,
+    userId = userId, reviewerId = reviewerId,
     status = if (reviewerId != null) EventStatus.APPROVED else EventStatus.PENDING,
     tags = tags.map { Tag(it.id, it.name) }
 )
