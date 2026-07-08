@@ -26,6 +26,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val _selectedTags = MutableStateFlow<Set<Int>>(emptySet())
     val selectedTags: StateFlow<Set<Int>> = _selectedTags
 
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery
+
     private val _events = MutableStateFlow<List<Event>>(emptyList())
     val events: StateFlow<List<Event>> = combine(_events, _availableTags) { events, tags ->
         events.map { event ->
@@ -35,11 +38,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    val filteredEvents: StateFlow<List<Event>> = combine(events, _currentUser, _selectedTags) { events, user, selectedTags ->
+    val filteredEvents: StateFlow<List<Event>> = combine(events, _currentUser, _selectedTags, _searchQuery) { events, user, selectedTags, query ->
         events.filter { event ->
             val matchesRole = event.status == EventStatus.APPROVED || user?.role == UserRole.ADMIN
             val matchesTags = selectedTags.isEmpty() || event.tags.any { it.id in selectedTags }
-            matchesRole && matchesTags
+            val matchesQuery = query.isBlank() || event.name.contains(query, ignoreCase = true)
+            matchesRole && matchesTags && matchesQuery
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
@@ -64,7 +68,11 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private fun fetchTags() {
         viewModelScope.launch {
             runCatching { repository.getTags() }
-                .onSuccess { _availableTags.value = it }
+                .onSuccess { 
+                    _availableTags.value = it
+                    // Trigger a refresh of events to ensure tags are mapped
+                    _events.value = _events.value.toList()
+                }
         }
     }
 
@@ -75,6 +83,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 _token = token
                 val userId = decodeUserId(token)
                 _currentUser.value = repository.getUser(userId, token)
+                fetchTags()
                 repository.refreshEvents()
             }.onSuccess { onSuccess() }
              .onFailure { onError(parseError(it, "Login failed")) }
@@ -154,6 +163,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         } else {
             _selectedTags.value = _selectedTags.value + tagId
         }
+    }
+
+    fun setSearchQuery(query: String) {
+        _searchQuery.value = query
     }
 
     // Extract FastAPI's `detail` field from HTTP error responses

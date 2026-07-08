@@ -16,6 +16,7 @@ data class Event(
     val locationCoords: EventLocation? = null,
     val date: String?,
     val startTime: String? = null,
+    val time: String? = null,
     val duration: Int? = null,
     val userId: Int,
     val reviewerId: Int?,

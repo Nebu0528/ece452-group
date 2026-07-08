@@ -54,7 +54,15 @@ class EventRepository(private val api: ApiService, private val db: EventDatabase
 // Mapping helpers
 private fun EventResponse.toEntity() = EventEntity(
     id = id, name = name, description = description, location = location,
-    lat = lat, lng = lng, date = null, startTime = startTime, duration = duration,
+    lat = lat, lng = lng, date = null, startTime = startTime,
+    time = startTime?.let {
+        runCatching {
+            val input = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
+            val output = java.text.SimpleDateFormat("h:mm a", java.util.Locale.getDefault())
+            output.format(input.parse(it)!!)
+        }.getOrNull()
+    },
+    duration = duration,
     userId = userId, reviewerId = reviewerId,
     status = if (reviewerId != null) EventStatus.APPROVED.name else EventStatus.PENDING.name,
     tagIds = tags.joinToString(",") { it.id.toString() }
@@ -63,16 +71,24 @@ private fun EventResponse.toEntity() = EventEntity(
 private fun EventEntity.toEvent() = Event(
     id = id, name = name, description = description, location = location,
     locationCoords = if (lat != null && lng != null) EventLocation(lat, lng) else null,
-    date = date, startTime = startTime, duration = duration,
+    date = date, startTime = startTime, time = time, duration = duration,
     userId = userId, reviewerId = reviewerId,
     status = EventStatus.valueOf(status),
-    tags = tagIds.split(",").filter { it.isNotEmpty() }.map { Tag(it.toInt(), "") }
+    tags = tagIds.split(",").filter { it.isNotBlank() }.map { Tag(it.trim().toInt(), "") }
 )
 
 private fun EventResponse.toEvent() = Event(
     id = id, name = name, description = description, location = location,
     locationCoords = if (lat != null && lng != null) EventLocation(lat, lng) else null,
-    date = null, startTime = startTime, duration = duration,
+    date = null, startTime = startTime,
+    time = startTime?.let {
+        runCatching {
+            val input = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
+            val output = java.text.SimpleDateFormat("h:mm a", java.util.Locale.getDefault())
+            output.format(input.parse(it)!!)
+        }.getOrNull()
+    },
+    duration = duration,
     userId = userId, reviewerId = reviewerId,
     status = if (reviewerId != null) EventStatus.APPROVED else EventStatus.PENDING,
     tags = tags.map { Tag(it.id, it.name) }
