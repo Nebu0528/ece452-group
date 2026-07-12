@@ -1,0 +1,4 @@
+# Project Titans Week 10 Update
+
+July 7 - July 13
+[Sadiq] : created a hotfix for local dev account testing after adding email verification previously. Planning out admin and organizer registration logic
