@@ -21,6 +21,7 @@ def upgrade():
     op.add_column('events', sa.Column('lng', sa.Float(), nullable=True))
     op.create_index(op.f('ix_events_id'), 'events', ['id'], unique=False)
     op.create_index(op.f('ix_tags_id'), 'tags', ['id'], unique=False)
+    op.execute("UPDATE users SET email = 'user' || id || '@placeholder.local' WHERE email IS NULL")
     op.alter_column('users', 'email',
                existing_type=sa.VARCHAR(),
                nullable=False)
