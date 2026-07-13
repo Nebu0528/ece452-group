@@ -3,3 +3,4 @@
 July 7 - July 13
 [Sadiq] : created a hotfix for local dev account testing after adding email verification previously. Planning out admin and organizer registration logic
 [Neel] : updated the database to have more fields which can be displayed on the planner page, reviewed PRs and coordinated work amongst other devs
+[Minh] : finish the search bar, and displayes the time on the UI. need to edit the PR still.
