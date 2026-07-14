@@ -111,7 +111,8 @@ private fun PendingEventCard(event: Event, onApprove: () -> Unit, onReject: () -
                 }
             }
 
-            if (!event.date.isNullOrBlank()) {
+            // Date and Time
+            if (!event.displayDateTime.isNullOrBlank()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         Icons.Default.CalendarToday,
@@ -120,21 +121,7 @@ private fun PendingEventCard(event: Event, onApprove: () -> Unit, onReject: () -
                         tint = MaterialTheme.colorScheme.primary
                     )
                     Spacer(Modifier.width(4.dp))
-                    Text(event.date ?: "", style = MaterialTheme.typography.bodyMedium)
-                }
-            }
-
-            // Time and Tags
-            if (!event.time.isNullOrBlank()) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.CalendarToday,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    Text(event.time, style = MaterialTheme.typography.bodyMedium)
+                    Text(event.displayDateTime ?: "", style = MaterialTheme.typography.bodyMedium)
                 }
             }
 

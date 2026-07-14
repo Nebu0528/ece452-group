@@ -149,15 +149,9 @@ fun EventCard(event: Event, onClick: () -> Unit) {
             }
 
             // Show Date and Time
-            val dateToDisplay = event.date ?: event.startTime?.let {
-                runCatching {
-                    val input = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
-                    val output = java.text.SimpleDateFormat("MMM d, yyyy", java.util.Locale.getDefault())
-                    output.format(input.parse(it)!!)
-                }.getOrNull()
-            }
+            val dateToDisplay = event.displayDateTime
             
-            if (dateToDisplay != null || !event.time.isNullOrBlank()) {
+            if (!dateToDisplay.isNullOrBlank()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         Icons.Default.CalendarToday,
@@ -166,8 +160,7 @@ fun EventCard(event: Event, onClick: () -> Unit) {
                         tint = MaterialTheme.colorScheme.primary
                     )
                     Spacer(Modifier.width(4.dp))
-                    val timeText = if (!event.time.isNullOrBlank()) " at ${event.time}" else ""
-                    Text("${dateToDisplay ?: ""}$timeText", style = MaterialTheme.typography.bodyMedium)
+                    Text(dateToDisplay, style = MaterialTheme.typography.bodyMedium)
                 }
             }
 
