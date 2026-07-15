@@ -1,5 +1,8 @@
 package ca.uwaterloo.ece452.discoveruwaterloo.data
 
+import java.text.SimpleDateFormat
+import java.util.Locale
+
 enum class UserRole { BASIC, ORGANIZER, ADMIN }
 
 enum class EventStatus { PENDING, APPROVED, REJECTED }
@@ -21,7 +24,16 @@ data class Event(
     val reviewerId: Int?,
     val status: EventStatus = EventStatus.PENDING,
     val tags: List<Tag> = emptyList()
-)
+) {
+    val displayDateTime: String?
+        get() = startTime?.let {
+            runCatching {
+                val input = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                val output = SimpleDateFormat("MMM d, yyyy 'at' h:mm a", Locale.getDefault())
+                output.format(input.parse(it)!!)
+            }.getOrNull()
+        } ?: date
+}
 
 data class User(
     val id: Int,

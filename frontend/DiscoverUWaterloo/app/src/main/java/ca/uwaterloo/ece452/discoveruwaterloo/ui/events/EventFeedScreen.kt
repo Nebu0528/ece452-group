@@ -7,7 +7,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,34 +30,67 @@ fun EventFeedScreen(
     val events by viewModel.filteredEvents.collectAsState()
     val availableTags by viewModel.availableTags.collectAsState()
     val selectedTags by viewModel.selectedTags.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        // Tag Filter Chips
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(availableTags) { tag ->
-                FilterChip(
-                    selected = selectedTags.contains(tag.id),
-                    onClick = { viewModel.toggleTag(tag.id) },
-                    label = { Text(tag.name) }
-                )
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        // Search Bar Item
+        item {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { viewModel.setSearchQuery(it) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, top = 16.dp),
+                placeholder = { Text("Search events...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { viewModel.setSearchQuery("") }) {
+                            Icon(Icons.Default.Close, contentDescription = "Clear search")
+                        }
+                    }
+                },
+                singleLine = true,
+                shape = MaterialTheme.shapes.medium
+            )
+        }
+
+        // Tag Filter Chips Item
+        item {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(vertical = 4.dp)
+            ) {
+                items(availableTags) { tag ->
+                    FilterChip(
+                        selected = selectedTags.contains(tag.id),
+                        onClick = { viewModel.toggleTag(tag.id) },
+                        label = { Text(tag.name) }
+                    )
+                }
             }
         }
 
-        // Event List
+        // Event List Items
         if (events.isEmpty()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("No events found.", style = MaterialTheme.typography.bodyLarge)
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillParentMaxSize()
+                        .padding(bottom = 100.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No events found.", style = MaterialTheme.typography.bodyLarge)
+                }
             }
         } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(events) { event ->
+            items(events) { event ->
+                Box(modifier = Modifier.padding(horizontal = 16.dp)) {
                     EventCard(event = event, onClick = { onEventClick(event.id) })
                 }
             }
@@ -113,7 +148,10 @@ fun EventCard(event: Event, onClick: () -> Unit) {
                 }
             }
 
-            if (!event.date.isNullOrBlank()) {
+            // Show Date and Time
+            val dateToDisplay = event.displayDateTime
+            
+            if (!dateToDisplay.isNullOrBlank()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         Icons.Default.CalendarToday,
@@ -122,7 +160,7 @@ fun EventCard(event: Event, onClick: () -> Unit) {
                         tint = MaterialTheme.colorScheme.primary
                     )
                     Spacer(Modifier.width(4.dp))
-                    Text(event.date, style = MaterialTheme.typography.bodyMedium)
+                    Text(dateToDisplay, style = MaterialTheme.typography.bodyMedium)
                 }
             }
 

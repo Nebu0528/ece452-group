@@ -18,7 +18,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import ca.uwaterloo.ece452.discoveruwaterloo.AppViewModel
 import ca.uwaterloo.ece452.discoveruwaterloo.data.EventStatus
-import java.text.SimpleDateFormat
 import java.util.Locale
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -83,8 +82,8 @@ fun EventDetailScreen(
             }
         }
 
-        // Date
-        if (!event.date.isNullOrBlank()) {
+        // Date and Time
+        if (!event.displayDateTime.isNullOrBlank()) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -95,27 +94,7 @@ fun EventDetailScreen(
                     modifier = Modifier.size(20.dp),
                     tint = MaterialTheme.colorScheme.primary
                 )
-                Text(event.date, style = MaterialTheme.typography.bodyLarge)
-            }
-        }
-
-        // Start time
-        if (!event.startTime.isNullOrBlank()) {
-            val displayTime = runCatching {
-                val display = SimpleDateFormat("MMM d, yyyy h:mm a", Locale.getDefault())
-                display.format(SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).parse(event.startTime)!!)
-            }.getOrDefault(event.startTime)
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Icon(
-                    Icons.Default.CalendarToday,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Text(displayTime, style = MaterialTheme.typography.bodyLarge)
+                Text(event.displayDateTime ?: "", style = MaterialTheme.typography.bodyLarge)
             }
         }
 
