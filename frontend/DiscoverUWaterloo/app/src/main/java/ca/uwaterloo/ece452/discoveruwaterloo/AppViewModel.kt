@@ -7,6 +7,7 @@ import ca.uwaterloo.ece452.discoveruwaterloo.data.*
 import ca.uwaterloo.ece452.discoveruwaterloo.data.api.RetrofitClient
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 class AppViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -53,6 +54,15 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     private val _plannerEvents = MutableStateFlow<List<Event>>(emptyList())
     val plannerEvents: StateFlow<List<Event>> = _plannerEvents
+
+    private val _selectedPlannerDate = MutableStateFlow(Calendar.getInstance())
+    val selectedPlannerDate: StateFlow<Calendar> = _selectedPlannerDate
+
+    val plannerEventsForSelectedDay: StateFlow<List<Event>> =
+        combine(_plannerEvents, _selectedPlannerDate) { events, day ->
+            events.filter { it.startCalendar()?.isSameDay(day) == true }
+                .sortedBy { it.startTime }
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
@@ -155,6 +165,15 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun removeFromPlanner(event: Event) {
         _plannerEvents.value = _plannerEvents.value.filter { it.id != event.id }
+    }
+
+    fun setPlannerDate(date: Calendar) {
+        _selectedPlannerDate.value = date
+    }
+
+    fun stepPlannerDate(days: Int) {
+        _selectedPlannerDate.value = (_selectedPlannerDate.value.clone() as Calendar)
+            .apply { add(Calendar.DAY_OF_YEAR, days) }
     }
 
     fun toggleTag(tagId: Int) {
