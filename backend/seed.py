@@ -172,6 +172,68 @@ def seed():
                 user_id=organizer.id, reviewer_id=admin.id,
                 tags=[sports],
             ),
+            # Same-day events (2026-09-19, alongside WatHacks 2026) — for testing the planner day view
+            Event(
+                name="same_day_test_1",
+                description="Kickoff event for WatHacks 2026. Meet the sponsors and hear the challenge tracks announced.",
+                location="E7 Building, Room 1004",
+                lat=43.4729, lng=-80.5393,
+                start_time=datetime(2026, 9, 19, 9, 0),
+                duration=60,
+                user_id=organizer.id, reviewer_id=admin.id,
+                tags=[engineering, social],
+            ),
+            Event(
+                name="same_day_test_2",
+                description="Back-to-back technical workshops hosted by hackathon sponsors. Drop in for any session.",
+                location="E7 Building, Room 1001",
+                lat=43.4729, lng=-80.5393,
+                start_time=datetime(2026, 9, 19, 11, 0),
+                duration=90,
+                user_id=organizer.id, reviewer_id=admin.id,
+                tags=[engineering],
+            ),
+            Event(
+                name="same_day_test_3",
+                description="Grab lunch and find teammates before the hacking begins. Icebreaker games included.",
+                location="E7 Building Atrium",
+                lat=43.4729, lng=-80.5393,
+                start_time=datetime(2026, 9, 19, 13, 0),
+                duration=60,
+                user_id=organizer.id, reviewer_id=admin.id,
+                tags=[social],
+            ),
+            # Overlapping events (2026-09-19) — for testing the schedule's side-by-side column layout
+            Event(
+                name="overlapping_event_1",
+                description="Overlaps with overlapping_event_2 and overlapping_event_3 for testing the day schedule.",
+                location="E7 Building, Room 2001",
+                lat=43.4729, lng=-80.5393,
+                start_time=datetime(2026, 9, 19, 15, 0),
+                duration=90,
+                user_id=organizer.id, reviewer_id=admin.id,
+                tags=[engineering],
+            ),
+            Event(
+                name="overlapping_event_2",
+                description="Overlaps with overlapping_event_1 and overlapping_event_3 for testing the day schedule.",
+                location="E7 Building, Room 2002",
+                lat=43.4729, lng=-80.5393,
+                start_time=datetime(2026, 9, 19, 15, 30),
+                duration=60,
+                user_id=organizer.id, reviewer_id=admin.id,
+                tags=[engineering],
+            ),
+            Event(
+                name="overlapping_event_3",
+                description="Overlaps with overlapping_event_1 and overlapping_event_2 for testing the day schedule.",
+                location="E7 Building, Room 2003",
+                lat=43.4729, lng=-80.5393,
+                start_time=datetime(2026, 9, 19, 16, 0),
+                duration=30,
+                user_id=organizer.id, reviewer_id=admin.id,
+                tags=[engineering],
+            ),
             # Pending events
             Event(
                 name="Intramural Soccer Signup",
@@ -225,7 +287,7 @@ def seed():
             ),
         ])
         db.commit()
-        print("Seeded: 3 users, 9 tags, 18 events (13 approved, 5 pending).")
+        print("Seeded: 3 users, 6 tags, 24 events (19 approved, 5 pending).")
     finally:
         db.close()
 
