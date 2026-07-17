@@ -27,7 +27,16 @@ def seed():
         sports = Tag(name="Sports", description="Sports and recreation events")
         arts = Tag(name="Arts", description="Arts, culture, and performance events")
         volunteer = Tag(name="Volunteer", description="Community service and volunteering")
-        db.add_all([engineering, social, academic, sports, arts, volunteer])
+
+        # Accessibility tags
+        wheelchair_accessible = Tag(name="Wheelchair Accessible", description="Venue has step-free access")
+        sign_language = Tag(name="Sign Language Interpretation", description="ASL interpretation provided")
+        quiet_space = Tag(name="Quiet Space", description="A low-stimulation space is available nearby")
+
+        db.add_all([
+            engineering, social, academic, sports, arts, volunteer,
+            wheelchair_accessible, sign_language, quiet_space,
+        ])
         db.flush()
 
         # Events — duration is in minutes
@@ -41,7 +50,7 @@ def seed():
                 start_time=datetime(2026, 9, 19, 18, 0),
                 duration=1440,
                 user_id=organizer.id, reviewer_id=admin.id,
-                tags=[engineering, social],
+                tags=[engineering, social, wheelchair_accessible, quiet_space],
             ),
             Event(
                 name="Engineering Research Fair",
@@ -81,7 +90,7 @@ def seed():
                 start_time=datetime(2026, 11, 3, 9, 0),
                 duration=360,
                 user_id=organizer.id, reviewer_id=admin.id,
-                tags=[academic, engineering],
+                tags=[academic, engineering, sign_language],
             ),
             Event(
                 name="Women in Engineering Networking Night",
@@ -216,7 +225,7 @@ def seed():
             ),
         ])
         db.commit()
-        print("Seeded: 3 users, 6 tags, 18 events (13 approved, 5 pending).")
+        print("Seeded: 3 users, 9 tags, 18 events (13 approved, 5 pending).")
     finally:
         db.close()
 
