@@ -23,7 +23,8 @@ data class EventResponse(
     @SerializedName("reviewer_id") val reviewerId: Int?,
     @SerializedName("start_time") val startTime: String? = null,
     val duration: Int? = null,
-    val tags: List<TagResponse> = emptyList()
+    val tags: List<TagResponse> = emptyList(),
+    @SerializedName("attendee_ids") val attendeeIds: List<Int> = emptyList()
 )
 data class EventCreateRequest(
     val name: String, val description: String?,
@@ -63,6 +64,12 @@ interface ApiService {
 
     @PATCH("events/{id}/review")
     suspend fun reviewEvent(@Path("id") id: Int, @Header("Authorization") token: String): EventResponse
+
+    @POST("events/{id}/attend")
+    suspend fun attendEvent(@Path("id") id: Int, @Header("Authorization") token: String): EventResponse
+
+    @DELETE("events/{id}/attend")
+    suspend fun unattendEvent(@Path("id") id: Int, @Header("Authorization") token: String): EventResponse
 
     @GET("tags/")
     suspend fun getTags(): List<TagResponse>

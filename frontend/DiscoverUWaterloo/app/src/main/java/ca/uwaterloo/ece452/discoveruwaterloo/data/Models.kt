@@ -23,7 +23,8 @@ data class Event(
     val userId: Int,
     val reviewerId: Int?,
     val status: EventStatus = EventStatus.PENDING,
-    val tags: List<Tag> = emptyList()
+    val tags: List<Tag> = emptyList(),
+    val attendeeIds: List<Int> = emptyList()
 ) {
     val displayDateTime: String?
         get() = startTime?.let {

@@ -9,6 +9,13 @@ event_tags = Table(
     Column("tag_id", Integer, ForeignKey("tags.id"), primary_key=True),
 )
 
+event_attendees = Table(
+    "event_attendees",
+    Base.metadata,
+    Column("event_id", Integer, ForeignKey("events.id", ondelete="CASCADE"), primary_key=True),
+    Column("user_id", Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
+)
+
 
 class Event(Base):
     __tablename__ = "events"
@@ -28,3 +35,8 @@ class Event(Base):
     creator = relationship("User", foreign_keys=[user_id], back_populates="created_events")
     reviewer = relationship("User", foreign_keys=[reviewer_id], back_populates="reviewed_events")
     tags = relationship("Tag", secondary=event_tags)
+    attendees = relationship("User", secondary=event_attendees, back_populates="attending_events")
+
+    @property
+    def attendee_ids(self) -> list[int]:
+        return [u.id for u in self.attendees]

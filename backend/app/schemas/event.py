@@ -28,5 +28,6 @@ class EventOut(BaseModel):
     user_id: int
     reviewer_id: int | None
     tags: list[TagOut] = []
+    attendee_ids: list[int] = []
 
     model_config = {"from_attributes": True}

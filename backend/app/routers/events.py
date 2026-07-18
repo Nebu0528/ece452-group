@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from app.database import get_db
 from app.models.event import Event
 from app.models.tag import Tag
+from app.models.user import User
 from app.schemas.event import EventCreate, EventOut
 from app.auth import get_current_user_id, require_roles
 
@@ -11,12 +12,12 @@ router = APIRouter(prefix="/events", tags=["events"])
 
 @router.get("/", response_model=list[EventOut])
 def list_events(db: Session = Depends(get_db)):
-    return db.query(Event).all()
+    return db.query(Event).options(selectinload(Event.attendees)).all()
 
 
 @router.get("/{event_id}", response_model=EventOut)
 def get_event(event_id: int, db: Session = Depends(get_db)):
-    event = db.query(Event).filter(Event.id == event_id).first()
+    event = db.query(Event).options(selectinload(Event.attendees)).filter(Event.id == event_id).first()
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
     return event
@@ -61,3 +62,29 @@ def delete_event(event_id: int, db: Session = Depends(get_db), _: int = Depends(
     db.delete(event)
     db.commit()
     return {"ok": True}
+
+
+@router.post("/{event_id}/attend", response_model=EventOut)
+def attend_event(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    event = db.query(Event).filter(Event.id == event_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    user = db.query(User).get(user_id)
+    if user not in event.attendees:
+        event.attendees.append(user)
+        db.commit()
+        db.refresh(event)
+    return event
+
+
+@router.delete("/{event_id}/attend", response_model=EventOut)
+def unattend_event(event_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    event = db.query(Event).filter(Event.id == event_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    user = db.query(User).get(user_id)
+    if user in event.attendees:
+        event.attendees.remove(user)
+        db.commit()
+        db.refresh(event)
+    return event
