@@ -18,7 +18,8 @@ data class EventEntity(
     val userId: Int,
     val reviewerId: Int?,
     val status: String,
-    val tagIds: String
+    val tagIds: String,
+    val attendeeIds: String = ""
 )
 
 @Dao
@@ -33,7 +34,7 @@ interface EventDao {
     suspend fun clearAll()
 }
 
-@Database(entities = [EventEntity::class], version = 4, exportSchema = false)
+@Database(entities = [EventEntity::class], version = 5, exportSchema = false)
 abstract class EventDatabase : RoomDatabase() {
     abstract fun eventDao(): EventDao
 

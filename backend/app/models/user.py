@@ -26,3 +26,4 @@ class User(Base):
 
     created_events = relationship("Event", foreign_keys="Event.user_id", back_populates="creator")
     reviewed_events = relationship("Event", foreign_keys="Event.reviewer_id", back_populates="reviewer")
+    attending_events = relationship("Event", secondary="event_attendees", back_populates="attendees")

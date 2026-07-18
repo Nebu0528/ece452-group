@@ -51,6 +51,7 @@ def seed():
                 duration=1440,
                 user_id=organizer.id, reviewer_id=admin.id,
                 tags=[engineering, social, wheelchair_accessible, quiet_space],
+                attendees=[student, admin],
             ),
             Event(
                 name="Engineering Research Fair",
@@ -81,6 +82,7 @@ def seed():
                 duration=120,
                 user_id=organizer.id, reviewer_id=admin.id,
                 tags=[sports, social],
+                attendees=[student],
             ),
             Event(
                 name="CS Research Symposium",
@@ -91,6 +93,7 @@ def seed():
                 duration=360,
                 user_id=organizer.id, reviewer_id=admin.id,
                 tags=[academic, engineering, sign_language],
+                attendees=[student, organizer, admin],
             ),
             Event(
                 name="Women in Engineering Networking Night",

@@ -48,6 +48,10 @@ class EventRepository(private val api: ApiService, private val db: EventDatabase
 
     suspend fun reviewEvent(id: Int, token: String): Event = api.reviewEvent(id, "Bearer $token").toEvent()
 
+    suspend fun attendEvent(id: Int, token: String): Event = api.attendEvent(id, "Bearer $token").toEvent()
+
+    suspend fun unattendEvent(id: Int, token: String): Event = api.unattendEvent(id, "Bearer $token").toEvent()
+
     suspend fun getTags(): List<Tag> = api.getTags().map { Tag(it.id, it.name) }
 }
 
@@ -58,7 +62,8 @@ private fun EventResponse.toEntity() = EventEntity(
     duration = duration,
     userId = userId, reviewerId = reviewerId,
     status = if (reviewerId != null) EventStatus.APPROVED.name else EventStatus.PENDING.name,
-    tagIds = tags.joinToString(",") { it.id.toString() }
+    tagIds = tags.joinToString(",") { it.id.toString() },
+    attendeeIds = attendeeIds.joinToString(",")
 )
 
 private fun EventEntity.toEvent() = Event(
@@ -67,7 +72,8 @@ private fun EventEntity.toEvent() = Event(
     date = date, startTime = startTime, duration = duration,
     userId = userId, reviewerId = reviewerId,
     status = EventStatus.valueOf(status),
-    tags = tagIds.split(",").filter { it.isNotBlank() }.map { Tag(it.trim().toInt(), "") }
+    tags = tagIds.split(",").filter { it.isNotBlank() }.map { Tag(it.trim().toInt(), "") },
+    attendeeIds = attendeeIds.split(",").filter { it.isNotBlank() }.map { it.trim().toInt() }
 )
 
 private fun EventResponse.toEvent() = Event(
@@ -77,5 +83,6 @@ private fun EventResponse.toEvent() = Event(
     duration = duration,
     userId = userId, reviewerId = reviewerId,
     status = if (reviewerId != null) EventStatus.APPROVED else EventStatus.PENDING,
-    tags = tags.map { Tag(it.id, it.name) }
+    tags = tags.map { Tag(it.id, it.name) },
+    attendeeIds = attendeeIds
 )

@@ -52,14 +52,17 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         .map { list -> list.filter { it.status == EventStatus.PENDING } }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    private val _plannerEvents = MutableStateFlow<List<Event>>(emptyList())
-    val plannerEvents: StateFlow<List<Event>> = _plannerEvents
+    private val _attendingEventIds = MutableStateFlow<Set<Int>>(emptySet())
+
+    val plannerEvents: StateFlow<List<Event>> = combine(events, _attendingEventIds) { evts, ids ->
+        evts.filter { it.id in ids }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     private val _selectedPlannerDate = MutableStateFlow(Calendar.getInstance())
     val selectedPlannerDate: StateFlow<Calendar> = _selectedPlannerDate
 
     val plannerEventsForSelectedDay: StateFlow<List<Event>> =
-        combine(_plannerEvents, _selectedPlannerDate) { events, day ->
+        combine(plannerEvents, _selectedPlannerDate) { events, day ->
             events.filter { it.startCalendar()?.isSameDay(day) == true }
                 .sortedBy { it.startTime }
         }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
@@ -95,6 +98,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 _currentUser.value = repository.getUser(userId, token)
                 fetchTags()
                 repository.refreshEvents()
+                _attendingEventIds.value = repository.getEvents().first()
+                    .filter { userId in it.attendeeIds }
+                    .map { it.id }
+                    .toSet()
             }.onSuccess { onSuccess() }
              .onFailure { onError(parseError(it, "Login failed")) }
         }
@@ -128,7 +135,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun logout() {
         _currentUser.value = null
         _token = null
-        _plannerEvents.value = emptyList()
+        _attendingEventIds.value = emptySet()
     }
 
     fun createEvent(name: String, description: String?, location: String?, lat: Double?, lng: Double?, startTime: String, duration: Int, tagIds: List<Int>, onError: (String) -> Unit) {
@@ -158,13 +165,30 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun addToPlanner(event: Event) {
-        if (_plannerEvents.value.none { it.id == event.id })
-            _plannerEvents.value = _plannerEvents.value + event
+    fun addToPlanner(event: Event, onError: (String) -> Unit = {}) {
+        val token = _token ?: return onError("Not logged in")
+        _attendingEventIds.value = _attendingEventIds.value + event.id
+        viewModelScope.launch {
+            runCatching { repository.attendEvent(event.id, token) }
+                .onSuccess { repository.refreshEvents() }
+                .onFailure {
+                    _attendingEventIds.value = _attendingEventIds.value - event.id
+                    onError(it.message ?: "Failed to add to planner")
+                }
+        }
     }
 
-    fun removeFromPlanner(event: Event) {
-        _plannerEvents.value = _plannerEvents.value.filter { it.id != event.id }
+    fun removeFromPlanner(event: Event, onError: (String) -> Unit = {}) {
+        val token = _token ?: return onError("Not logged in")
+        _attendingEventIds.value = _attendingEventIds.value - event.id
+        viewModelScope.launch {
+            runCatching { repository.unattendEvent(event.id, token) }
+                .onSuccess { repository.refreshEvents() }
+                .onFailure {
+                    _attendingEventIds.value = _attendingEventIds.value + event.id
+                    onError(it.message ?: "Failed to remove from planner")
+                }
+        }
     }
 
     fun setPlannerDate(date: Calendar) {
