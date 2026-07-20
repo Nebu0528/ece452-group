@@ -2,3 +2,4 @@
 
 Jul 20 Mon
 [Neel]: Added a live user count for events to show a total count of users who will attend the event. Updated the database to store events linked to users. Reviewed and merged PRs.
+[Rohan]: Replaced google maps based routing with the intended milestone based routing now users can see their live location on the app and navigate to the event location.
