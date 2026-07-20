@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.email import generate_verification_code, send_verification_email
 from app.models.invite import Invite
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.schemas.user import LoginRequest, Token, UserCreate, UserOut, VerifyEmailRequest
 from app.auth import create_access_token, hash_password, verify_password
 

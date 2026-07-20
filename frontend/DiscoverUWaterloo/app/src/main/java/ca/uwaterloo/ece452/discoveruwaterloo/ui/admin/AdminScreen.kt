@@ -140,9 +140,10 @@ private fun InviteUserTab(viewModel: AppViewModel) {
             Button(
                 onClick = {
                     if (!email.endsWith("@uwaterloo.ca")) { emailError = true; return@Button }
-                    viewModel.sendInvite(email, selectedRole,
+                    val emailToSend = email 
+                    viewModel.sendInvite(emailToSend, selectedRole,
                         onSuccess = {
-                            scope.launch { snackbarHostState.showSnackbar("Invite sent to $email") }
+                            scope.launch { snackbarHostState.showSnackbar("Invite sent to $emailToSend") }
                             email = ""
                         },
                         onError = { error ->
