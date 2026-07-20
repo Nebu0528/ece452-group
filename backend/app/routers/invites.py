@@ -9,7 +9,7 @@ from app.auth import require_roles
 from app.database import get_db
 from app.email import send_invite_email
 from app.models.invite import Invite
-from app.models.user import UserRole
+from app.models.user import User, UserRole
 
 router = APIRouter(prefix="/invites", tags=["invites"])
 
@@ -29,6 +29,16 @@ def create_invite(
 ):
     if body.role == UserRole.BASIC:
         raise HTTPException(status_code=400, detail="Invites are only for organizer or admin roles")
+
+    # Block if email is already registered
+    if db.query(User).filter(User.email == body.email).first():
+        raise HTTPException(status_code=400, detail="A user with this email is already registered")
+
+    # Invalidate any existing unused invite for this email so only the latest one works
+    db.query(Invite).filter(
+        Invite.email == body.email,
+        Invite.used == False
+    ).update({"used": True})
 
     token = str(uuid.uuid4())
     expires = datetime.utcnow() + timedelta(hours=INVITE_EXPIRY_HOURS)

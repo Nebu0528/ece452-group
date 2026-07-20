@@ -20,6 +20,7 @@ fun RegisterScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var inviteCode by remember { mutableStateOf("") }
+    var showInviteField by remember { mutableStateOf(false) }
     var emailError by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -63,17 +64,28 @@ fun RegisterScreen(
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(8.dp))
 
-            OutlinedTextField(
-                value = inviteCode,
-                onValueChange = { inviteCode = it },
-                label = { Text("Invite Code (optional)") },
-                supportingText = { Text("Only needed if you were invited as organizer or admin") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(Modifier.height(24.dp))
+            // Invite code — hidden by default, shown on demand
+            TextButton(
+                onClick = { showInviteField = !showInviteField },
+                modifier = Modifier.align(Alignment.Start)
+            ) {
+                Text(if (showInviteField) "Cancel invite code" else "Have an invite code?")
+            }
+
+            if (showInviteField) {
+                OutlinedTextField(
+                    value = inviteCode,
+                    onValueChange = { inviteCode = it },
+                    label = { Text("Invite Code") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(8.dp))
+            }
+
+            Spacer(Modifier.height(16.dp))
 
             Button(
                 onClick = {
