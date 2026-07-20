@@ -130,8 +130,8 @@ fun AppNavigation(viewModel: AppViewModel) {
             }
             composable(Routes.REGISTER) {
                 RegisterScreen(
-                    onRegister = { name, email, password, role, onError ->
-                        viewModel.register(name, email, password, role,
+                    onRegister = { name, email, password, inviteToken, onError ->
+                        viewModel.register(name, email, password, inviteToken,
                             onSuccess = {
                                 navController.navigate(Routes.verifyEmail(email)) {
                                     popUpTo(Routes.REGISTER) { inclusive = true }

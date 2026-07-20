@@ -107,12 +107,21 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun register(name: String, email: String, password: String, role: UserRole, onSuccess: () -> Unit, onError: (String) -> Unit) {
+    fun register(name: String, email: String, password: String, inviteToken: String?, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             runCatching {
-                repository.register(name, email, password, role)
+                repository.register(name, email, password, inviteToken)
             }.onSuccess { onSuccess() }
              .onFailure { onError(parseError(it, "Registration failed")) }
+        }
+    }
+
+    fun sendInvite(email: String, role: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        val token = _token ?: return onError("Not logged in")
+        viewModelScope.launch {
+            runCatching { repository.sendInvite(email, role, token) }
+                .onSuccess { onSuccess() }
+                .onFailure { onError(parseError(it, "Failed to send invite")) }
         }
     }
 

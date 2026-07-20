@@ -3,6 +3,7 @@ package ca.uwaterloo.ece452.discoveruwaterloo.data
 import ca.uwaterloo.ece452.discoveruwaterloo.data.api.ApiService
 import ca.uwaterloo.ece452.discoveruwaterloo.data.api.EventCreateRequest
 import ca.uwaterloo.ece452.discoveruwaterloo.data.api.EventResponse
+import ca.uwaterloo.ece452.discoveruwaterloo.data.api.InviteRequest
 import ca.uwaterloo.ece452.discoveruwaterloo.data.api.LoginRequest
 import ca.uwaterloo.ece452.discoveruwaterloo.data.api.RegisterRequest
 import ca.uwaterloo.ece452.discoveruwaterloo.data.api.VerifyEmailRequest
@@ -15,10 +16,13 @@ class EventRepository(private val api: ApiService, private val db: EventDatabase
     suspend fun login(email: String, password: String): String =
         api.login(LoginRequest(email, password)).accessToken
 
-    suspend fun register(name: String, email: String, password: String, role: UserRole): User {
-        val resp = api.register(RegisterRequest(name, email, password, role.name.lowercase()))
+    suspend fun register(name: String, email: String, password: String, inviteToken: String?): User {
+        val resp = api.register(RegisterRequest(name, email, password, inviteToken))
         return User(resp.id, resp.name, resp.email, UserRole.valueOf(resp.role.uppercase()))
     }
+
+    suspend fun sendInvite(email: String, role: String, token: String): String =
+        api.sendInvite(InviteRequest(email, role), "Bearer $token").message
 
     suspend fun verifyEmail(email: String, code: String): String =
         api.verifyEmail(VerifyEmailRequest(email, code)).message

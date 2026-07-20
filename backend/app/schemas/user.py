@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, EmailStr
 from app.models.user import UserRole
 
@@ -6,7 +7,7 @@ class UserCreate(BaseModel):
     name: str
     email: EmailStr
     password: str
-    role: UserRole = UserRole.BASIC
+    invite_token: Optional[str] = None
 
 
 class UserOut(BaseModel):
