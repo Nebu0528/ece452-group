@@ -1,7 +1,6 @@
 package ca.uwaterloo.ece452.discoveruwaterloo.data.routing
 
 import org.osmdroid.util.GeoPoint
-import kotlin.math.sqrt
 
 data class Milestone(
     val id: String,
@@ -37,9 +36,7 @@ object MilestoneRouter {
     )
 
     private fun distance(p1: GeoPoint, p2: GeoPoint): Double {
-        val dLat = p1.latitude - p2.latitude
-        val dLng = p1.longitude - p2.longitude
-        return sqrt(dLat * dLat + dLng * dLng)
+        return p1.distanceToAsDouble(p2)
     }
 
     fun findClosestMilestone(point: GeoPoint): Milestone {
