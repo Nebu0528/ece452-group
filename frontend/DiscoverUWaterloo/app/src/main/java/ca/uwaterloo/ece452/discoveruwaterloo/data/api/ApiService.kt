@@ -10,7 +10,8 @@ import java.util.concurrent.TimeUnit
 
 // Request/Response DTOs matching FastAPI schemas
 data class LoginRequest(val email: String, val password: String)
-data class RegisterRequest(val name: String, val email: String, val password: String, val role: String)
+data class RegisterRequest(val name: String, val email: String, val password: String, @SerializedName("invite_token") val inviteToken: String?)
+data class InviteRequest(val email: String, val role: String)
 data class VerifyEmailRequest(val email: String, val code: String)
 data class MessageResponse(val message: String)
 data class TokenResponse(@SerializedName("access_token") val accessToken: String)
@@ -40,6 +41,9 @@ interface ApiService {
 
     @POST("users/register")
     suspend fun register(@Body request: RegisterRequest): UserResponse
+
+    @POST("invites/")
+    suspend fun sendInvite(@Body request: InviteRequest, @Header("Authorization") token: String): MessageResponse
 
     @POST("users/verify-email")
     suspend fun verifyEmail(@Body request: VerifyEmailRequest): MessageResponse

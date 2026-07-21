@@ -6,7 +6,8 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.email import generate_verification_code, send_verification_email
-from app.models.user import User
+from app.models.invite import Invite
+from app.models.user import User, UserRole
 from app.schemas.user import LoginRequest, Token, UserCreate, UserOut, VerifyEmailRequest
 from app.auth import create_access_token, hash_password, verify_password
 
@@ -28,6 +29,21 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     if db.query(User).filter(User.email == user.email).first():
         raise HTTPException(status_code=400, detail="Email already registered")
 
+    # Resolve role from invite token if provided
+    role = UserRole.BASIC
+    if user.invite_token:
+        invite = db.query(Invite).filter(Invite.token == user.invite_token).first()
+        if not invite:
+            raise HTTPException(status_code=400, detail="Invalid invite code")
+        if invite.used:
+            raise HTTPException(status_code=400, detail="Invite code has already been used")
+        if invite.expires_at < datetime.utcnow():
+            raise HTTPException(status_code=400, detail="Invite code has expired")
+        if invite.email != user.email:
+            raise HTTPException(status_code=400, detail="Invite code is not for this email address")
+        role = UserRole(invite.role)
+        invite.used = True
+
     code = generate_verification_code()
     expires = datetime.utcnow() + timedelta(minutes=CODE_EXPIRY_MINUTES)
 
@@ -35,7 +51,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         name=user.name,
         email=user.email,
         password=hash_password(user.password),
-        role=user.role,
+        role=role,
         is_verified=False,
         verification_code=code,
         verification_code_expires_at=expires,

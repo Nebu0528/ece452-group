@@ -9,18 +9,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import ca.uwaterloo.ece452.discoveruwaterloo.data.UserRole
 import kotlinx.coroutines.launch
 
 @Composable
 fun RegisterScreen(
-    onRegister: (name: String, email: String, password: String, role: UserRole, onError: (String) -> Unit) -> Unit,
+    onRegister: (name: String, email: String, password: String, inviteToken: String?, onError: (String) -> Unit) -> Unit,
     onNavigateToLogin: () -> Unit
 ) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var selectedRole by remember { mutableStateOf(UserRole.BASIC) }
+    var inviteCode by remember { mutableStateOf("") }
+    var showInviteField by remember { mutableStateOf(false) }
     var emailError by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -64,26 +64,34 @@ fun RegisterScreen(
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(Modifier.height(16.dp))
-
-            Text("Role", style = MaterialTheme.typography.labelLarge)
             Spacer(Modifier.height(8.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf(UserRole.BASIC to "Student", UserRole.ORGANIZER to "Organizer", UserRole.ADMIN to "Admin")
-                    .forEach { (role, label) ->
-                        FilterChip(
-                            selected = selectedRole == role,
-                            onClick = { selectedRole = role },
-                            label = { Text(label) }
-                        )
-                    }
+
+            // Invite code — hidden by default, shown on demand
+            TextButton(
+                onClick = { showInviteField = !showInviteField },
+                modifier = Modifier.align(Alignment.Start)
+            ) {
+                Text(if (showInviteField) "Cancel invite code" else "Have an invite code?")
             }
-            Spacer(Modifier.height(24.dp))
+
+            if (showInviteField) {
+                OutlinedTextField(
+                    value = inviteCode,
+                    onValueChange = { inviteCode = it },
+                    label = { Text("Invite Code") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(8.dp))
+            }
+
+            Spacer(Modifier.height(16.dp))
 
             Button(
                 onClick = {
                     if (!email.endsWith("@uwaterloo.ca")) { emailError = true; return@Button }
-                    onRegister(name, email, password, selectedRole) { error ->
+                    val token = inviteCode.trim().ifEmpty { null }
+                    onRegister(name, email, password, token) { error ->
                         scope.launch { snackbarHostState.showSnackbar(error) }
                     }
                 },
