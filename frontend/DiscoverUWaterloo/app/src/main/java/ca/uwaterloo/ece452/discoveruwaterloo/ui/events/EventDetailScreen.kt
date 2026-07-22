@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,6 +20,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import ca.uwaterloo.ece452.discoveruwaterloo.AppViewModel
 import ca.uwaterloo.ece452.discoveruwaterloo.data.EventStatus
+import ca.uwaterloo.ece452.discoveruwaterloo.data.repeatLabel
+import java.text.SimpleDateFormat
 import java.util.Locale
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -118,6 +121,32 @@ fun EventDetailScreen(
                     tint = MaterialTheme.colorScheme.primary
                 )
                 Text(durationLabel, style = MaterialTheme.typography.bodyLarge)
+            }
+        }
+
+        // Repeats
+        val repeatText = repeatLabel(event.schedule)
+        if (repeatText != null) {
+            val frequencyEndDisplay = event.frequencyEnd?.let {
+                runCatching {
+                    val display = SimpleDateFormat("MMM d, yyyy", Locale.getDefault())
+                    display.format(SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it)!!)
+                }.getOrNull()
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Icon(
+                    Icons.Default.Repeat,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    if (frequencyEndDisplay != null) "Repeats: $repeatText until $frequencyEndDisplay" else "Repeats: $repeatText",
+                    style = MaterialTheme.typography.bodyLarge
+                )
             }
         }
 
