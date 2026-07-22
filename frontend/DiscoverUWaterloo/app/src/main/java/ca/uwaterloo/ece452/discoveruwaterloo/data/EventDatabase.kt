@@ -34,7 +34,7 @@ interface EventDao {
     suspend fun clearAll()
 }
 
-@Database(entities = [EventEntity::class], version = 5, exportSchema = false)
+@Database(entities = [EventEntity::class], version = 6, exportSchema = false)
 abstract class EventDatabase : RoomDatabase() {
     abstract fun eventDao(): EventDao
 

@@ -77,7 +77,7 @@ private fun EventEntity.toEvent() = Event(
     locationCoords = if (lat != null && lng != null) EventLocation(lat, lng) else null,
     date = date, startTime = startTime, duration = duration,
     userId = userId, reviewerId = reviewerId,
-    status = EventStatus.valueOf(status),
+    status = runCatching { EventStatus.valueOf(status) }.getOrDefault(EventStatus.PENDING),
     tags = tagIds.split(",").filter { it.isNotBlank() }.map { Tag(it.trim().toInt(), "") },
     attendeeIds = attendeeIds.split(",").filter { it.isNotBlank() }.map { it.trim().toInt() }
 )
