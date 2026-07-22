@@ -1,6 +1,13 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Table, Float, DateTime
+import enum
+from sqlalchemy import Column, Integer, String, ForeignKey, Table, Float, DateTime, Enum as SAEnum
 from sqlalchemy.orm import relationship
 from app.database import Base
+
+
+class EventStatus(str, enum.Enum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
 
 event_tags = Table(
     "event_tags",
@@ -31,6 +38,7 @@ class Event(Base):
     schedule = Column(String, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     reviewer_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    status = Column(SAEnum(EventStatus), default=EventStatus.PENDING, nullable=False, server_default="pending")
 
     creator = relationship("User", foreign_keys=[user_id], back_populates="created_events")
     reviewer = relationship("User", foreign_keys=[reviewer_id], back_populates="reviewed_events")

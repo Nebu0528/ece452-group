@@ -48,7 +48,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    val pendingEvents: StateFlow<List<Event>> = _events
+    val pendingEvents: StateFlow<List<Event>> = events
         .map { list -> list.filter { it.status == EventStatus.PENDING } }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
@@ -97,7 +97,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 val userId = decodeUserId(token)
                 _currentUser.value = repository.getUser(userId, token)
                 fetchTags()
-                repository.refreshEvents()
+                repository.refreshEvents(token)
                 _attendingEventIds.value = repository.getEvents().first()
                     .filter { userId in it.attendeeIds }
                     .map { it.id }
@@ -151,7 +151,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val token = _token ?: return onError("Not logged in")
         viewModelScope.launch {
             runCatching { repository.createEvent(name, description, location, lat, lng, startTime, duration, tagIds, token) }
-                .onSuccess { repository.refreshEvents() }
+                .onSuccess { repository.refreshEvents(_token) }
                 .onFailure { onError(it.message ?: "Failed to create event") }
         }
     }
@@ -160,7 +160,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val token = _token ?: return onError("Not logged in")
         viewModelScope.launch {
             runCatching { repository.reviewEvent(eventId, token) }
-                .onSuccess { repository.refreshEvents() }
+                .onSuccess { repository.refreshEvents(_token) }
                 .onFailure { onError(it.message ?: "Failed to approve event") }
         }
     }
@@ -168,8 +168,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun rejectEvent(eventId: Int, onError: (String) -> Unit) {
         val token = _token ?: return onError("Not logged in")
         viewModelScope.launch {
-            runCatching { repository.deleteEvent(eventId, token) }
-                .onSuccess { repository.refreshEvents() }
+            runCatching { repository.rejectEvent(eventId, token) }
+                .onSuccess { repository.refreshEvents(_token) }
                 .onFailure { onError(it.message ?: "Failed to reject event") }
         }
     }
@@ -179,7 +179,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         _attendingEventIds.value = _attendingEventIds.value + event.id
         viewModelScope.launch {
             runCatching { repository.attendEvent(event.id, token) }
-                .onSuccess { repository.refreshEvents() }
+                .onSuccess { repository.refreshEvents(_token) }
                 .onFailure {
                     _attendingEventIds.value = _attendingEventIds.value - event.id
                     onError(it.message ?: "Failed to add to planner")
@@ -192,7 +192,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         _attendingEventIds.value = _attendingEventIds.value - event.id
         viewModelScope.launch {
             runCatching { repository.unattendEvent(event.id, token) }
-                .onSuccess { repository.refreshEvents() }
+                .onSuccess { repository.refreshEvents(_token) }
                 .onFailure {
                     _attendingEventIds.value = _attendingEventIds.value + event.id
                     onError(it.message ?: "Failed to remove from planner")
