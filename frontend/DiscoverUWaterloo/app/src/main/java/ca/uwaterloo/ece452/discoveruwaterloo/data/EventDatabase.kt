@@ -15,6 +15,10 @@ data class EventEntity(
     val date: String?,
     val startTime: String?,
     val duration: Int?,
+    val schedule: String?,
+    val frequencyEnd: String?,
+    val nextOccurrenceStart: String?,
+    val nextOccurrenceEnd: String?,
     val userId: Int,
     val reviewerId: Int?,
     val status: String,
@@ -34,7 +38,7 @@ interface EventDao {
     suspend fun clearAll()
 }
 
-@Database(entities = [EventEntity::class], version = 5, exportSchema = false)
+@Database(entities = [EventEntity::class], version = 6, exportSchema = false)
 abstract class EventDatabase : RoomDatabase() {
     abstract fun eventDao(): EventDao
 

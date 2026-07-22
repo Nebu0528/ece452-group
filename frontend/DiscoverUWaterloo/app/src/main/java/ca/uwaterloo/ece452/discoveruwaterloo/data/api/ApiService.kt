@@ -24,6 +24,10 @@ data class EventResponse(
     @SerializedName("reviewer_id") val reviewerId: Int?,
     @SerializedName("start_time") val startTime: String? = null,
     val duration: Int? = null,
+    val schedule: String? = null,
+    @SerializedName("frequency_end") val frequencyEnd: String? = null,
+    @SerializedName("next_occurrence_start") val nextOccurrenceStart: String? = null,
+    @SerializedName("next_occurrence_end") val nextOccurrenceEnd: String? = null,
     val tags: List<TagResponse> = emptyList(),
     @SerializedName("attendee_ids") val attendeeIds: List<Int> = emptyList()
 )
@@ -32,6 +36,8 @@ data class EventCreateRequest(
     val location: String?, val lat: Double?, val lng: Double?,
     @SerializedName("start_time") val startTime: String,
     val duration: Int,
+    val schedule: String?,
+    @SerializedName("frequency_end") val frequencyEnd: String?,
     @SerializedName("tag_ids") val tagIds: List<Int> = emptyList()
 )
 
