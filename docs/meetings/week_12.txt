@@ -1,0 +1,4 @@
+# Project Titans Week 12 Update
+
+Jul 27 Mon
+[Antarpreet]: Implemented security fixes and event status lifecycle — server-side email domain validation, role-based event filtering, reject endpoint, delete ownership enforcement, organizer "My Events" tab, and organizer name on admin pending cards.
