@@ -38,7 +38,7 @@ class Event(Base):
     schedule = Column(String, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     reviewer_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    status = Column(SAEnum(EventStatus), default=EventStatus.PENDING, nullable=False, server_default="pending")
+    status = Column(SAEnum(EventStatus, values_callable=lambda x: [e.value for e in x]), default=EventStatus.PENDING, nullable=False, server_default="pending")
 
     creator = relationship("User", foreign_keys=[user_id], back_populates="created_events")
     reviewer = relationship("User", foreign_keys=[reviewer_id], back_populates="reviewed_events")
