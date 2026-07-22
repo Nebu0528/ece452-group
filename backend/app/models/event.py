@@ -48,3 +48,7 @@ class Event(Base):
     @property
     def attendee_ids(self) -> list[int]:
         return [u.id for u in self.attendees]
+
+    @property
+    def organizer_name(self) -> str | None:
+        return self.creator.name if self.creator else None

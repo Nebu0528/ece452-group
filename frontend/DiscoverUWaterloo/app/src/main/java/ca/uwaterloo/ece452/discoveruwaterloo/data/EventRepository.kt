@@ -68,6 +68,7 @@ private fun EventResponse.toEntity() = EventEntity(
     duration = duration,
     userId = userId, reviewerId = reviewerId,
     status = status.uppercase(),
+    organizerName = organizerName,
     tagIds = tags.joinToString(",") { it.id.toString() },
     attendeeIds = attendeeIds.joinToString(",")
 )
@@ -78,6 +79,7 @@ private fun EventEntity.toEvent() = Event(
     date = date, startTime = startTime, duration = duration,
     userId = userId, reviewerId = reviewerId,
     status = runCatching { EventStatus.valueOf(status) }.getOrDefault(EventStatus.PENDING),
+    organizerName = organizerName,
     tags = tagIds.split(",").filter { it.isNotBlank() }.map { Tag(it.trim().toInt(), "") },
     attendeeIds = attendeeIds.split(",").filter { it.isNotBlank() }.map { it.trim().toInt() }
 )
@@ -89,6 +91,7 @@ private fun EventResponse.toEvent() = Event(
     duration = duration,
     userId = userId, reviewerId = reviewerId,
     status = runCatching { EventStatus.valueOf(status.uppercase()) }.getOrDefault(EventStatus.PENDING),
+    organizerName = organizerName,
     tags = tags.map { Tag(it.id, it.name) },
     attendeeIds = attendeeIds
 )

@@ -23,6 +23,7 @@ data class EventResponse(
     @SerializedName("user_id") val userId: Int,
     @SerializedName("reviewer_id") val reviewerId: Int?,
     val status: String = "pending",
+    @SerializedName("organizer_name") val organizerName: String? = null,
     @SerializedName("start_time") val startTime: String? = null,
     val duration: Int? = null,
     val tags: List<TagResponse> = emptyList(),

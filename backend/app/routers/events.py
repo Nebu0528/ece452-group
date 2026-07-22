@@ -28,7 +28,7 @@ def _get_optional_user(token: Optional[str] = Depends(_optional_bearer), db: Ses
 
 @router.get("/", response_model=list[EventOut])
 def list_events(db: Session = Depends(get_db), current_user: Optional[User] = Depends(_get_optional_user)):
-    query = db.query(Event).options(selectinload(Event.attendees))
+    query = db.query(Event).options(selectinload(Event.attendees), selectinload(Event.creator))
     if current_user and current_user.role == UserRole.ADMIN:
         pass  # admin sees all
     elif current_user and current_user.role == UserRole.ORGANIZER:
