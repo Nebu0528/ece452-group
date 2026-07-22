@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
+enum class FeedTab { THIS_WEEK, ALL }
+
 class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     private val repository = EventRepository(
@@ -30,6 +32,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
 
+    private val _selectedFeedTab = MutableStateFlow(FeedTab.THIS_WEEK)
+    val selectedFeedTab: StateFlow<FeedTab> = _selectedFeedTab
+
     private val _events = MutableStateFlow<List<Event>>(emptyList())
     val events: StateFlow<List<Event>> = combine(_events, _availableTags) { events, tags ->
         events.map { event ->
@@ -39,13 +44,20 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    val filteredEvents: StateFlow<List<Event>> = combine(events, _currentUser, _selectedTags, _searchQuery) { events, user, selectedTags, query ->
+    val filteredEvents: StateFlow<List<Event>> = combine(events, _currentUser, _selectedTags, _searchQuery, _selectedFeedTab) { events, user, selectedTags, query, feedTab ->
+        val weekDeadline = endOfCurrentWeek()
         events.filter { event ->
             val matchesRole = event.status == EventStatus.APPROVED || user?.role == UserRole.ADMIN
             val matchesTags = selectedTags.isEmpty() || event.tags.any { it.id in selectedTags }
             val matchesQuery = query.isBlank() || event.name.contains(query, ignoreCase = true)
-            matchesRole && matchesTags && matchesQuery
+            val matchesWeek = feedTab == FeedTab.ALL || query.isNotBlank() || event.occursBy(weekDeadline)
+            matchesRole && matchesTags && matchesQuery && matchesWeek
         }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    val mapEvents: StateFlow<List<Event>> = filteredEvents.map { events ->
+        val deadline = (Calendar.getInstance().clone() as Calendar).apply { add(Calendar.HOUR_OF_DAY, 24) }
+        events.filter { it.occursBy(deadline) }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     val pendingEvents: StateFlow<List<Event>> = _events
@@ -147,10 +159,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         _attendingEventIds.value = emptySet()
     }
 
-    fun createEvent(name: String, description: String?, location: String?, lat: Double?, lng: Double?, startTime: String, duration: Int, tagIds: List<Int>, onError: (String) -> Unit) {
+    fun createEvent(name: String, description: String?, location: String?, lat: Double?, lng: Double?, startTime: String, duration: Int, schedule: String?, frequencyEnd: String?, tagIds: List<Int>, onError: (String) -> Unit) {
         val token = _token ?: return onError("Not logged in")
         viewModelScope.launch {
-            runCatching { repository.createEvent(name, description, location, lat, lng, startTime, duration, tagIds, token) }
+            runCatching { repository.createEvent(name, description, location, lat, lng, startTime, duration, schedule, frequencyEnd, tagIds, token) }
                 .onSuccess { repository.refreshEvents() }
                 .onFailure { onError(it.message ?: "Failed to create event") }
         }
@@ -219,6 +231,16 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun setSearchQuery(query: String) {
         _searchQuery.value = query
+    }
+
+    fun setFeedTab(tab: FeedTab) {
+        _selectedFeedTab.value = tab
+    }
+
+    fun refreshEvents() {
+        viewModelScope.launch {
+            runCatching { repository.refreshEvents() }
+        }
     }
 
     // Extract FastAPI's `detail` field from HTTP error responses
