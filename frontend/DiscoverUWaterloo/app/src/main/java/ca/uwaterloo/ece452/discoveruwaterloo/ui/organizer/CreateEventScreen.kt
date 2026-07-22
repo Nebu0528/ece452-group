@@ -2,6 +2,7 @@ package ca.uwaterloo.ece452.discoveruwaterloo.ui.organizer
 
 import android.content.Context
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -23,6 +24,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import ca.uwaterloo.ece452.discoveruwaterloo.AppViewModel
+import ca.uwaterloo.ece452.discoveruwaterloo.data.Event
+import ca.uwaterloo.ece452.discoveruwaterloo.data.EventStatus
 import kotlinx.coroutines.launch
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
@@ -37,9 +40,31 @@ import java.util.TimeZone
 
 private val UWATERLOO = GeoPoint(43.4723, -80.5448)
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateEventScreen(viewModel: AppViewModel) {
+    var selectedTab by remember { mutableIntStateOf(0) }
+    val tabs = listOf("Create Event", "My Events")
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        TabRow(selectedTabIndex = selectedTab) {
+            tabs.forEachIndexed { index, title ->
+                Tab(
+                    selected = selectedTab == index,
+                    onClick = { selectedTab = index },
+                    text = { Text(title) }
+                )
+            }
+        }
+        when (selectedTab) {
+            0 -> CreateEventForm(viewModel)
+            1 -> MyEventsTab(viewModel)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CreateEventForm(viewModel: AppViewModel) {
     val context = LocalContext.current
 
     var name by remember { mutableStateOf("") }
@@ -335,6 +360,86 @@ fun CreateEventScreen(viewModel: AppViewModel) {
             }
 
             Spacer(Modifier.height(8.dp))
+        }
+    }
+}
+
+@Composable
+private fun MyEventsTab(viewModel: AppViewModel) {
+    val myEvents by viewModel.myEvents.collectAsState()
+
+    if (myEvents.isEmpty()) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("No events submitted yet.", style = MaterialTheme.typography.bodyLarge)
+        }
+    } else {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(myEvents) { event ->
+                MyEventCard(event = event)
+            }
+        }
+    }
+}
+
+@Composable
+private fun MyEventCard(event: Event) {
+    val (statusLabel, statusColor) = when (event.status) {
+        EventStatus.PENDING -> "Under Review" to Color(0xFFF57F17)
+        EventStatus.APPROVED -> "Approved" to Color(0xFF2E7D32)
+        EventStatus.REJECTED -> "Rejected" to MaterialTheme.colorScheme.error
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    event.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(statusLabel, style = MaterialTheme.typography.labelSmall, color = statusColor)
+            }
+            Spacer(Modifier.height(8.dp))
+
+            if (!event.location.isNullOrBlank()) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.LocationOn, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
+                    Spacer(Modifier.width(4.dp))
+                    Text(event.location, style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+            if (!event.displayDateTime.isNullOrBlank()) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.CalendarToday, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
+                    Spacer(Modifier.width(4.dp))
+                    Text(event.displayDateTime ?: "", style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+            if (event.tags.isNotEmpty()) {
+                Spacer(Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    event.tags.forEach { tag ->
+                        AssistChip(
+                            onClick = {},
+                            label = { Text(tag.name, style = MaterialTheme.typography.labelSmall) },
+                            modifier = Modifier.height(24.dp)
+                        )
+                    }
+                }
+            }
         }
     }
 }

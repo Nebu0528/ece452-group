@@ -52,6 +52,11 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         .map { list -> list.filter { it.status == EventStatus.PENDING } }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
+    val myEvents: StateFlow<List<Event>> = combine(events, _currentUser) { evts, user ->
+        if (user == null) emptyList()
+        else evts.filter { it.userId == user.id }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
     private val _attendingEventIds = MutableStateFlow<Set<Int>>(emptySet())
 
     val plannerEvents: StateFlow<List<Event>> = combine(events, _attendingEventIds) { evts, ids ->
