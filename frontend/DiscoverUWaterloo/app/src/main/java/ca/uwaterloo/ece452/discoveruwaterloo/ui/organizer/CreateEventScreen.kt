@@ -367,8 +367,9 @@ private fun CreateEventForm(viewModel: AppViewModel) {
 @Composable
 private fun MyEventsTab(viewModel: AppViewModel) {
     val myEvents by viewModel.myEvents.collectAsState()
+    val reversedEvents = remember(myEvents) { myEvents.reversed() }
 
-    if (myEvents.isEmpty()) {
+    if (reversedEvents.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text("No events submitted yet.", style = MaterialTheme.typography.bodyLarge)
         }
@@ -378,7 +379,7 @@ private fun MyEventsTab(viewModel: AppViewModel) {
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(myEvents) { event ->
+            items(reversedEvents) { event ->
                 MyEventCard(event = event)
             }
         }
