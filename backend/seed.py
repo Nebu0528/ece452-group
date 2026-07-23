@@ -13,6 +13,10 @@ def weekly_schedule(start_time: datetime) -> str:
     return f"{start_time.minute} {start_time.hour} * * {cron_dow}"
 
 
+def daily_schedule(start_time: datetime) -> str:
+    return f"{start_time.minute} {start_time.hour} * * *"
+
+
 def seed():
     db = SessionLocal()
     try:
@@ -71,6 +75,11 @@ def seed():
         food_bank_start = datetime(2026, 10, 18, 10, 0)
         solar_car_start = datetime(2026, 9, 25, 13, 0)
         gala_start = datetime(2026, 3, 27, 18, 0)
+        daily_event_1_start = datetime(2026, 8, 3, 7, 0)
+        daily_event_2_start = datetime(2026, 8, 3, 12, 0)
+        daily_event_3_start = datetime(2026, 8, 3, 16, 30)
+        daily_event_4_start = datetime(2026, 8, 3, 19, 0)
+        daily_event_5_start = datetime(2026, 8, 3, 21, 0)
 
         # Events — duration is in minutes
         db.add_all([
@@ -308,6 +317,67 @@ def seed():
                 user_id=organizer.id, reviewer_id=admin.id,
                 tags=[engineering],
             ),
+            # Daily recurring events — for testing the "Happening This Week" / campus map daily overlap
+            Event(
+                name="daily_event_1",
+                description="Daily-recurring test event, early morning slot.",
+                location="SLC Great Hall",
+                lat=43.4745, lng=-80.5525,
+                start_time=daily_event_1_start,
+                duration=45,
+                schedule=daily_schedule(daily_event_1_start),
+                frequency_end=None,
+                user_id=organizer.id, reviewer_id=admin.id,
+                tags=[social],
+            ),
+            Event(
+                name="daily_event_2",
+                description="Daily-recurring test event, midday slot.",
+                location="DC Atrium",
+                lat=43.4723, lng=-80.5449,
+                start_time=daily_event_2_start,
+                duration=45,
+                schedule=daily_schedule(daily_event_2_start),
+                frequency_end=None,
+                user_id=organizer.id, reviewer_id=admin.id,
+                tags=[academic],
+            ),
+            Event(
+                name="daily_event_3",
+                description="Daily-recurring test event, late afternoon slot.",
+                location="PAC Fieldhouse",
+                lat=43.4754, lng=-80.5503,
+                start_time=daily_event_3_start,
+                duration=45,
+                schedule=daily_schedule(daily_event_3_start),
+                frequency_end=None,
+                user_id=organizer.id, reviewer_id=admin.id,
+                tags=[sports],
+            ),
+            Event(
+                name="daily_event_4",
+                description="Daily-recurring test event, evening slot.",
+                location="E7 Building Atrium",
+                lat=43.4729, lng=-80.5393,
+                start_time=daily_event_4_start,
+                duration=45,
+                schedule=daily_schedule(daily_event_4_start),
+                frequency_end=None,
+                user_id=organizer.id, reviewer_id=admin.id,
+                tags=[engineering],
+            ),
+            Event(
+                name="daily_event_5",
+                description="Daily-recurring test event, night slot.",
+                location="CIF Field",
+                lat=43.4752, lng=-80.5516,
+                start_time=daily_event_5_start,
+                duration=45,
+                schedule=daily_schedule(daily_event_5_start),
+                frequency_end=None,
+                user_id=organizer.id, reviewer_id=admin.id,
+                tags=[social],
+            ),
             # Pending events
             Event(
                 name="Intramural Soccer Signup",
@@ -371,7 +441,7 @@ def seed():
             ),
         ])
         db.commit()
-        print("Seeded: 3 users, 6 tags, 24 events (19 approved, 5 pending), all weekly-recurring.")
+        print("Seeded: 3 users, 6 tags, 29 events (24 approved, 5 pending); 5 daily-recurring, rest weekly-recurring.")
     finally:
         db.close()
 
