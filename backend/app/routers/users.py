@@ -26,6 +26,8 @@ def _send_email_background(email: str, code: str):
 
 @router.post("/register", response_model=UserOut)
 def register(user: UserCreate, db: Session = Depends(get_db)):
+    if not user.email.endswith("@uwaterloo.ca"):
+        raise HTTPException(status_code=400, detail="Must use a @uwaterloo.ca email address")
     if db.query(User).filter(User.email == user.email).first():
         raise HTTPException(status_code=400, detail="Email already registered")
 

@@ -27,6 +27,8 @@ class EventOut(BaseModel):
     schedule: str | None
     user_id: int
     reviewer_id: int | None
+    status: str
+    organizer_name: str | None = None
     tags: list[TagOut] = []
     attendee_ids: list[int] = []
 

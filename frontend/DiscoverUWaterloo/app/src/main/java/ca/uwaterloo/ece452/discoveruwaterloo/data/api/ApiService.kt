@@ -22,6 +22,8 @@ data class EventResponse(
     val location: String?, val lat: Double?, val lng: Double?,
     @SerializedName("user_id") val userId: Int,
     @SerializedName("reviewer_id") val reviewerId: Int?,
+    val status: String = "pending",
+    @SerializedName("organizer_name") val organizerName: String? = null,
     @SerializedName("start_time") val startTime: String? = null,
     val duration: Int? = null,
     val tags: List<TagResponse> = emptyList(),
@@ -55,7 +57,7 @@ interface ApiService {
     suspend fun getUser(@Path("id") id: Int, @Header("Authorization") token: String): UserResponse
 
     @GET("events/")
-    suspend fun getEvents(): List<EventResponse>
+    suspend fun getEvents(@Header("Authorization") token: String?): List<EventResponse>
 
     @GET("events/{id}")
     suspend fun getEvent(@Path("id") id: Int): EventResponse
@@ -68,6 +70,9 @@ interface ApiService {
 
     @PATCH("events/{id}/review")
     suspend fun reviewEvent(@Path("id") id: Int, @Header("Authorization") token: String): EventResponse
+
+    @PATCH("events/{id}/reject")
+    suspend fun rejectEvent(@Path("id") id: Int, @Header("Authorization") token: String): EventResponse
 
     @POST("events/{id}/attend")
     suspend fun attendEvent(@Path("id") id: Int, @Header("Authorization") token: String): EventResponse

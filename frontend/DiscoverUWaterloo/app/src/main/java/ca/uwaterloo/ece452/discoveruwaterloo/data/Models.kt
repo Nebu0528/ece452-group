@@ -23,6 +23,7 @@ data class Event(
     val userId: Int,
     val reviewerId: Int?,
     val status: EventStatus = EventStatus.PENDING,
+    val organizerName: String? = null,
     val tags: List<Tag> = emptyList(),
     val attendeeIds: List<Int> = emptyList()
 ) {

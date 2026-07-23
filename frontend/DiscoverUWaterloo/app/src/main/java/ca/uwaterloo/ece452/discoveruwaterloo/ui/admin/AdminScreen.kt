@@ -169,8 +169,15 @@ private fun PendingEventCard(event: Event, onApprove: () -> Unit, onReject: () -
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(event.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(event.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                 Text("Pending Review", style = MaterialTheme.typography.labelSmall, color = Color(0xFFF57F17))
+            }
+            if (!event.organizerName.isNullOrBlank()) {
+                Text(
+                    "Submitted by ${event.organizerName}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
             Spacer(Modifier.height(8.dp))
 

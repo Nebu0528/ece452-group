@@ -36,8 +36,8 @@ class EventRepository(private val api: ApiService, private val db: EventDatabase
     }
 
     // Events — fetches from API and caches locally
-    suspend fun refreshEvents() {
-        val remote = api.getEvents()
+    suspend fun refreshEvents(token: String? = null) {
+        val remote = api.getEvents(token?.let { "Bearer $it" })
         db.eventDao().clearAll()
         db.eventDao().upsertAll(remote.map { it.toEntity() })
     }
@@ -52,6 +52,8 @@ class EventRepository(private val api: ApiService, private val db: EventDatabase
 
     suspend fun reviewEvent(id: Int, token: String): Event = api.reviewEvent(id, "Bearer $token").toEvent()
 
+    suspend fun rejectEvent(id: Int, token: String): Event = api.rejectEvent(id, "Bearer $token").toEvent()
+
     suspend fun attendEvent(id: Int, token: String): Event = api.attendEvent(id, "Bearer $token").toEvent()
 
     suspend fun unattendEvent(id: Int, token: String): Event = api.unattendEvent(id, "Bearer $token").toEvent()
@@ -65,7 +67,8 @@ private fun EventResponse.toEntity() = EventEntity(
     lat = lat, lng = lng, date = null, startTime = startTime,
     duration = duration,
     userId = userId, reviewerId = reviewerId,
-    status = if (reviewerId != null) EventStatus.APPROVED.name else EventStatus.PENDING.name,
+    status = status.uppercase(),
+    organizerName = organizerName,
     tagIds = tags.joinToString(",") { it.id.toString() },
     attendeeIds = attendeeIds.joinToString(",")
 )
@@ -75,7 +78,8 @@ private fun EventEntity.toEvent() = Event(
     locationCoords = if (lat != null && lng != null) EventLocation(lat, lng) else null,
     date = date, startTime = startTime, duration = duration,
     userId = userId, reviewerId = reviewerId,
-    status = EventStatus.valueOf(status),
+    status = runCatching { EventStatus.valueOf(status) }.getOrDefault(EventStatus.PENDING),
+    organizerName = organizerName,
     tags = tagIds.split(",").filter { it.isNotBlank() }.map { Tag(it.trim().toInt(), "") },
     attendeeIds = attendeeIds.split(",").filter { it.isNotBlank() }.map { it.trim().toInt() }
 )
@@ -86,7 +90,8 @@ private fun EventResponse.toEvent() = Event(
     date = null, startTime = startTime,
     duration = duration,
     userId = userId, reviewerId = reviewerId,
-    status = if (reviewerId != null) EventStatus.APPROVED else EventStatus.PENDING,
+    status = runCatching { EventStatus.valueOf(status.uppercase()) }.getOrDefault(EventStatus.PENDING),
+    organizerName = organizerName,
     tags = tags.map { Tag(it.id, it.name) },
     attendeeIds = attendeeIds
 )
