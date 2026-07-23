@@ -44,19 +44,24 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    val filteredEvents: StateFlow<List<Event>> = combine(events, _currentUser, _selectedTags, _searchQuery, _selectedFeedTab) { events, user, selectedTags, query, feedTab ->
-        val weekDeadline = endOfCurrentWeek()
+    private val roleTagSearchFilteredEvents: StateFlow<List<Event>> = combine(events, _currentUser, _selectedTags, _searchQuery) { events, user, selectedTags, query ->
         events.filter { event ->
             val matchesRole = event.status == EventStatus.APPROVED || user?.role == UserRole.ADMIN
             val matchesTags = selectedTags.isEmpty() || event.tags.any { it.id in selectedTags }
             val matchesQuery = query.isBlank() || event.name.contains(query, ignoreCase = true)
-            val matchesWeek = feedTab == FeedTab.ALL || query.isNotBlank() || event.occursBy(weekDeadline)
-            matchesRole && matchesTags && matchesQuery && matchesWeek
+            matchesRole && matchesTags && matchesQuery
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    val mapEvents: StateFlow<List<Event>> = filteredEvents.map { events ->
-        val deadline = (Calendar.getInstance().clone() as Calendar).apply { add(Calendar.HOUR_OF_DAY, 24) }
+    val filteredEvents: StateFlow<List<Event>> = combine(roleTagSearchFilteredEvents, _searchQuery, _selectedFeedTab) { events, query, feedTab ->
+        val weekDeadline = endOfCurrentWeek()
+        events.filter { event ->
+            feedTab == FeedTab.ALL || query.isNotBlank() || event.occursBy(weekDeadline)
+        }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    val mapEvents: StateFlow<List<Event>> = roleTagSearchFilteredEvents.map { events ->
+        val deadline = Calendar.getInstance().apply { add(Calendar.HOUR_OF_DAY, 24) }
         events.filter { it.occursBy(deadline) }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 

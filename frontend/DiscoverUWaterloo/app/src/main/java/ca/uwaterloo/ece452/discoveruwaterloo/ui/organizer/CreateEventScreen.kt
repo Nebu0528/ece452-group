@@ -207,7 +207,7 @@ private fun CreateEventForm(viewModel: AppViewModel) {
                         if (!validName || !validLocation || !validStartTime || !validDuration || !validFrequencyEnd) return@Button
 
                         val schedule = startTime?.let { iso ->
-                            val startCal = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+                            val startCal = Calendar.getInstance().apply {
                                 time = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).parse(iso)!!
                             }
                             cronForRepeatOption(repeatOption, startCal)
