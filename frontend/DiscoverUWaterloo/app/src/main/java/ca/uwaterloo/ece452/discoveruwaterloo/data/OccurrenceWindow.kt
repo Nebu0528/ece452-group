@@ -7,9 +7,32 @@ import java.util.Locale
 private val isoDateTimeFormat: SimpleDateFormat
     get() = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
 
+private val nextOccurrenceDisplayFormat: SimpleDateFormat
+    get() = SimpleDateFormat("MMM d, yyyy 'at' h:mm a", Locale.getDefault())
+
 fun Event.nextOccurrenceStartCalendar(): Calendar? =
     nextOccurrenceStart?.let { runCatching { isoDateTimeFormat.parse(it) }.getOrNull() }
         ?.let { Calendar.getInstance().apply { time = it } }
+
+fun Event.nextOccurrenceEndCalendar(): Calendar? =
+    nextOccurrenceEnd?.let { runCatching { isoDateTimeFormat.parse(it) }.getOrNull() }
+        ?.let { Calendar.getInstance().apply { time = it } }
+
+// True if [now] falls within this event's next occurrence window.
+fun Event.isHappeningNow(now: Calendar = Calendar.getInstance()): Boolean {
+    val start = nextOccurrenceStartCalendar() ?: return false
+    val end = nextOccurrenceEndCalendar() ?: return false
+    return !now.before(start) && !now.after(end)
+}
+
+// "Happening now" while the event's next occurrence is in progress; otherwise
+// the formatted next occurrence start. Falls back to the legacy displayDateTime
+// (based on the original start_time) if there's no next occurrence at all.
+fun Event.nextOccurrenceDisplay(): String? {
+    if (isHappeningNow()) return "Happening now"
+    val start = nextOccurrenceStartCalendar() ?: return displayDateTime
+    return nextOccurrenceDisplayFormat.format(start.time)
+}
 
 // True if this event has a next occurrence and it starts on or before [deadline].
 // The backend only ever returns a nextOccurrenceStart whose occurrence hasn't

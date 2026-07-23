@@ -21,6 +21,7 @@ import ca.uwaterloo.ece452.discoveruwaterloo.AppViewModel
 import ca.uwaterloo.ece452.discoveruwaterloo.FeedTab
 import ca.uwaterloo.ece452.discoveruwaterloo.data.Event
 import ca.uwaterloo.ece452.discoveruwaterloo.data.EventStatus
+import ca.uwaterloo.ece452.discoveruwaterloo.data.nextOccurrenceDisplay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -170,8 +171,8 @@ fun EventCard(event: Event, onClick: () -> Unit) {
                 }
             }
 
-            // Show Date and Time
-            val dateToDisplay = event.displayDateTime
+            // Show Date and Time — the event's next occurrence, or "Happening now" if it's in progress
+            val dateToDisplay = event.nextOccurrenceDisplay()
             
             if (!dateToDisplay.isNullOrBlank()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
