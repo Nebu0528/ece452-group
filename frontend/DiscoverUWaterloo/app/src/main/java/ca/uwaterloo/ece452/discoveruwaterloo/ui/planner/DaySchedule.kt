@@ -15,8 +15,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import ca.uwaterloo.ece452.discoveruwaterloo.data.Event
-import ca.uwaterloo.ece452.discoveruwaterloo.data.formattedStartTime
-import ca.uwaterloo.ece452.discoveruwaterloo.data.startCalendar
+import ca.uwaterloo.ece452.discoveruwaterloo.data.occurrenceDisplay
+import ca.uwaterloo.ece452.discoveruwaterloo.data.occurrenceOn
 import java.util.Calendar
 
 private val HOUR_HEIGHT = 64.dp
@@ -31,10 +31,18 @@ private data class PositionedEvent(
     val top: Dp,
     val height: Dp,
     val columnIndex: Int,
-    val columnCount: Int
+    val columnCount: Int,
+    val occurrenceStart: Calendar,
+    val occurrenceEnd: Calendar
 )
 
-private data class TimedEvent(val event: Event, val startMinute: Int, val endMinute: Int)
+private data class TimedEvent(
+    val event: Event,
+    val startMinute: Int,
+    val endMinute: Int,
+    val occurrenceStart: Calendar,
+    val occurrenceEnd: Calendar
+)
 
 private fun hourLabel(hour: Int): String = when {
     hour == 0 -> "12 AM"
@@ -45,16 +53,16 @@ private fun hourLabel(hour: Int): String = when {
 
 // Sorts events by start time, groups transitively-overlapping events into clusters, then greedily
 // packs each cluster into the fewest columns (reusing a column once its previous event has ended).
-private fun layoutEvents(events: List<Event>): List<PositionedEvent> {
+private fun layoutEvents(events: List<Event>, day: Calendar): List<PositionedEvent> {
     val pixelsPerMinute = HOUR_HEIGHT / 60
     val totalHeight = pixelsPerMinute * MINUTES_PER_DAY
 
     val timedEvents = events.mapNotNull { event ->
-        val cal = event.startCalendar() ?: return@mapNotNull null
-        val startMinute = cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE)
+        val (occurrenceStart, occurrenceEnd) = event.occurrenceOn(day) ?: return@mapNotNull null
+        val startMinute = occurrenceStart.get(Calendar.HOUR_OF_DAY) * 60 + occurrenceStart.get(Calendar.MINUTE)
         val duration = event.duration?.takeIf { it > 0 } ?: DEFAULT_DURATION_MINUTES
         val endMinute = (startMinute + duration).coerceAtMost(MINUTES_PER_DAY)
-        TimedEvent(event, startMinute, endMinute)
+        TimedEvent(event, startMinute, endMinute, occurrenceStart, occurrenceEnd)
     }.sortedBy { it.startMinute }
 
     val positioned = mutableListOf<PositionedEvent>()
@@ -86,7 +94,12 @@ private fun layoutEvents(events: List<Event>): List<PositionedEvent> {
             val top = pixelsPerMinute * timedEvent.startMinute
             val rawHeight = maxOf(pixelsPerMinute * (timedEvent.endMinute - timedEvent.startMinute), MIN_BLOCK_HEIGHT)
             val height = if (top + rawHeight > totalHeight) totalHeight - top else rawHeight
-            positioned.add(PositionedEvent(timedEvent.event, top, height, column, columnCount))
+            positioned.add(
+                PositionedEvent(
+                    timedEvent.event, top, height, column, columnCount,
+                    timedEvent.occurrenceStart, timedEvent.occurrenceEnd
+                )
+            )
         }
         i = j
     }
@@ -94,8 +107,8 @@ private fun layoutEvents(events: List<Event>): List<PositionedEvent> {
 }
 
 @Composable
-fun DaySchedule(events: List<Event>, onEventClick: (Int) -> Unit) {
-    val positioned = remember(events) { layoutEvents(events) }
+fun DaySchedule(events: List<Event>, selectedDate: Calendar, onEventClick: (Int) -> Unit) {
+    val positioned = remember(events, selectedDate) { layoutEvents(events, selectedDate) }
     val totalHeight = HOUR_HEIGHT * 24
 
     Row(
@@ -136,6 +149,8 @@ fun DaySchedule(events: List<Event>, onEventClick: (Int) -> Unit) {
                 val columnWidth = maxWidth / positionedEvent.columnCount
                 ScheduleEventBlock(
                     event = positionedEvent.event,
+                    occurrenceStart = positionedEvent.occurrenceStart,
+                    occurrenceEnd = positionedEvent.occurrenceEnd,
                     onClick = { onEventClick(positionedEvent.event.id) },
                     modifier = Modifier
                         .offset(x = columnWidth * positionedEvent.columnIndex, y = positionedEvent.top)
@@ -149,7 +164,13 @@ fun DaySchedule(events: List<Event>, onEventClick: (Int) -> Unit) {
 }
 
 @Composable
-private fun ScheduleEventBlock(event: Event, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun ScheduleEventBlock(
+    event: Event,
+    occurrenceStart: Calendar,
+    occurrenceEnd: Calendar,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Card(
         modifier = modifier.clickable(onClick = onClick),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -161,15 +182,13 @@ private fun ScheduleEventBlock(event: Event, onClick: () -> Unit, modifier: Modi
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            event.formattedStartTime()?.let {
-                Text(
-                    it,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
+            Text(
+                occurrenceDisplay(occurrenceStart, occurrenceEnd, fullDate = false),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
             if (!event.location.isNullOrBlank()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(

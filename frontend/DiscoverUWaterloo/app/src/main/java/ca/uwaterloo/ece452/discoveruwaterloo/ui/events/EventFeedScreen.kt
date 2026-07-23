@@ -18,8 +18,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ca.uwaterloo.ece452.discoveruwaterloo.AppViewModel
+import ca.uwaterloo.ece452.discoveruwaterloo.FeedTab
 import ca.uwaterloo.ece452.discoveruwaterloo.data.Event
 import ca.uwaterloo.ece452.discoveruwaterloo.data.EventStatus
+import ca.uwaterloo.ece452.discoveruwaterloo.data.nextOccurrenceDisplay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,12 +33,33 @@ fun EventFeedScreen(
     val availableTags by viewModel.availableTags.collectAsState()
     val selectedTags by viewModel.selectedTags.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val selectedFeedTab by viewModel.selectedFeedTab.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.refreshEvents()
+    }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        // Tabs
+        item {
+            TabRow(selectedTabIndex = selectedFeedTab.ordinal) {
+                Tab(
+                    selected = selectedFeedTab == FeedTab.THIS_WEEK,
+                    onClick = { viewModel.setFeedTab(FeedTab.THIS_WEEK) },
+                    text = { Text("Happening This Week") }
+                )
+                Tab(
+                    selected = selectedFeedTab == FeedTab.ALL,
+                    onClick = { viewModel.setFeedTab(FeedTab.ALL) },
+                    text = { Text("All Events") }
+                )
+            }
+        }
+
         // Search Bar Item
         item {
             OutlinedTextField(
@@ -148,8 +171,8 @@ fun EventCard(event: Event, onClick: () -> Unit) {
                 }
             }
 
-            // Show Date and Time
-            val dateToDisplay = event.displayDateTime
+            // Show Date and Time — the event's next occurrence, or "Happening now" if it's in progress
+            val dateToDisplay = event.nextOccurrenceDisplay()
             
             if (!dateToDisplay.isNullOrBlank()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
