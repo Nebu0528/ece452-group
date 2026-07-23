@@ -81,7 +81,7 @@ fun PlannerScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             } else {
-                DaySchedule(events = dayEvents, onEventClick = onEventClick)
+                DaySchedule(events = dayEvents, selectedDate = selectedDate, onEventClick = onEventClick)
             }
         }
         item {

@@ -6,7 +6,7 @@ enum class RepeatOption { NONE, DAILY, WEEKLY, MONTHLY }
 
 // Cron day-of-week follows the standard convention: 0 or 7 = Sunday, 1 = Monday, ..., 6 = Saturday.
 // Calendar.DAY_OF_WEEK uses SUNDAY = 1 .. SATURDAY = 7, so subtracting 1 converts it directly.
-private fun cronDayOfWeek(calendar: Calendar): Int = calendar.get(Calendar.DAY_OF_WEEK) - 1
+fun cronDayOfWeek(calendar: Calendar): Int = calendar.get(Calendar.DAY_OF_WEEK) - 1
 
 fun cronForRepeatOption(option: RepeatOption, start: Calendar): String? {
     val minute = start.get(Calendar.MINUTE)
