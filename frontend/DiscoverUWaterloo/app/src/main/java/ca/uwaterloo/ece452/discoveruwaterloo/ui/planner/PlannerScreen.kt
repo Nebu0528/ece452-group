@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import ca.uwaterloo.ece452.discoveruwaterloo.AppViewModel
 import ca.uwaterloo.ece452.discoveruwaterloo.data.Event
 import ca.uwaterloo.ece452.discoveruwaterloo.data.dayLabel
-import ca.uwaterloo.ece452.discoveruwaterloo.data.formattedStartTime
+import ca.uwaterloo.ece452.discoveruwaterloo.data.nextOccurrenceDisplay
 import java.util.Calendar
 import java.util.TimeZone
 
@@ -198,7 +198,7 @@ private fun PlannerEventCard(
                     }
                 }
 
-                event.formattedStartTime()?.let { formatted ->
+                event.nextOccurrenceDisplay()?.let { formatted ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
