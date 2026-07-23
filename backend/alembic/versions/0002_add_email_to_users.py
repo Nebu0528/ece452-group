@@ -15,11 +15,13 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column('users', sa.Column('email', sa.String(), nullable=True))
-    op.create_unique_constraint('uq_users_email', 'users', ['email'])
+    with op.batch_alter_table('users', schema=None) as batch_op:
+        batch_op.add_column(sa.Column('email', sa.String(), nullable=True))
+        batch_op.create_unique_constraint('uq_users_email', ['email'])
     # After backfilling data in prod, set nullable=False via a second migration
 
 
 def downgrade():
-    op.drop_constraint('uq_users_email', 'users', type_='unique')
-    op.drop_column('users', 'email')
+    with op.batch_alter_table('users', schema=None) as batch_op:
+        batch_op.drop_constraint('uq_users_email', type_='unique')
+        batch_op.drop_column('email')

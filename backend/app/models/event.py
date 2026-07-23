@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Table, Float, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, Table, Float, DateTime, Date
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -29,6 +29,7 @@ class Event(Base):
     start_time = Column(DateTime, nullable=True)
     duration = Column(Integer, nullable=True)
     schedule = Column(String, nullable=True)
+    frequency_end = Column(Date, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     reviewer_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
