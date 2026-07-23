@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from app.database import SessionLocal
 from app.models.user import User, UserRole
 from app.models.tag import Tag
@@ -15,6 +15,10 @@ def weekly_schedule(start_time: datetime) -> str:
 
 def daily_schedule(start_time: datetime) -> str:
     return f"{start_time.minute} {start_time.hour} * * *"
+
+
+def monthly_schedule(start_time: datetime) -> str:
+    return f"{start_time.minute} {start_time.hour} {start_time.day} * *"
 
 
 def seed():
@@ -51,35 +55,40 @@ def seed():
         db.flush()
 
         # Event start times — every seeded event repeats weekly, forever, from its own start time.
-        wathacks_start = datetime(2026, 9, 19, 18, 0)
-        research_fair_start = datetime(2026, 10, 5, 10, 0)
-        velocity_demo_start = datetime(2026, 11, 12, 14, 0)
-        basketball_start = datetime(2026, 10, 22, 19, 0)
-        cs_symposium_start = datetime(2026, 11, 3, 9, 0)
-        wie_start = datetime(2026, 10, 8, 17, 30)
-        math_bbq_start = datetime(2026, 9, 8, 12, 0)
-        coop_info_start = datetime(2026, 9, 15, 16, 0)
-        physics_colloquium_start = datetime(2026, 10, 29, 15, 30)
-        ece_symposium_start = datetime(2026, 4, 8, 9, 0)
-        drama_club_start = datetime(2026, 11, 20, 19, 30)
-        sustainability_fair_start = datetime(2026, 10, 15, 11, 0)
-        open_swim_start = datetime(2026, 10, 1, 8, 0)
-        same_day_1_start = datetime(2026, 9, 19, 9, 0)
-        same_day_2_start = datetime(2026, 9, 19, 11, 0)
-        same_day_3_start = datetime(2026, 9, 19, 13, 0)
-        overlap_1_start = datetime(2026, 9, 19, 15, 0)
-        overlap_2_start = datetime(2026, 9, 19, 15, 30)
-        overlap_3_start = datetime(2026, 9, 19, 16, 0)
-        soccer_signup_start = datetime(2026, 9, 5, 10, 0)
-        weef_start = datetime(2026, 10, 6, 17, 0)
-        food_bank_start = datetime(2026, 10, 18, 10, 0)
-        solar_car_start = datetime(2026, 9, 25, 13, 0)
-        gala_start = datetime(2026, 3, 27, 18, 0)
-        daily_event_1_start = datetime(2026, 8, 3, 7, 0)
-        daily_event_2_start = datetime(2026, 8, 3, 12, 0)
-        daily_event_3_start = datetime(2026, 8, 3, 16, 30)
-        daily_event_4_start = datetime(2026, 8, 3, 19, 0)
-        daily_event_5_start = datetime(2026, 8, 3, 21, 0)
+        wathacks_start = datetime(2025, 9, 19, 18, 0)
+        research_fair_start = datetime(2025, 10, 5, 10, 0)
+        velocity_demo_start = datetime(2025, 11, 12, 14, 0)
+        basketball_start = datetime(2025, 10, 22, 19, 0)
+        cs_symposium_start = datetime(2025, 11, 3, 9, 0)
+        wie_start = datetime(2025, 10, 8, 17, 30)
+        math_bbq_start = datetime(2025, 9, 8, 12, 0)
+        coop_info_start = datetime(2025, 9, 15, 16, 0)
+        physics_colloquium_start = datetime(2025, 10, 29, 15, 30)
+        ece_symposium_start = datetime(2025, 4, 8, 9, 0)
+        drama_club_start = datetime(2025, 11, 20, 19, 30)
+        sustainability_fair_start = datetime(2025, 10, 15, 11, 0)
+        open_swim_start = datetime(2025, 10, 1, 8, 0)
+        same_day_1_start = datetime(2025, 9, 19, 9, 0)
+        same_day_2_start = datetime(2025, 9, 19, 11, 0)
+        same_day_3_start = datetime(2025, 9, 19, 13, 0)
+        overlap_1_start = datetime(2025, 9, 19, 15, 0)
+        overlap_2_start = datetime(2025, 9, 19, 15, 30)
+        overlap_3_start = datetime(2025, 9, 19, 16, 0)
+        soccer_signup_start = datetime(2025, 9, 5, 10, 0)
+        weef_start = datetime(2025, 10, 6, 17, 0)
+        food_bank_start = datetime(2025, 10, 18, 10, 0)
+        solar_car_start = datetime(2025, 9, 25, 13, 0)
+        gala_start = datetime(2025, 3, 27, 18, 0)
+        daily_event_1_start = datetime(2025, 8, 3, 7, 0)
+        daily_event_2_start = datetime(2025, 8, 3, 12, 0)
+        daily_event_3_start = datetime(2025, 8, 3, 16, 30)
+        daily_event_4_start = datetime(2025, 8, 3, 19, 0)
+        daily_event_5_start = datetime(2025, 8, 3, 21, 0)
+        monthly_event_1_start = datetime(2025, 8, 1, 9, 0)
+        monthly_event_2_start = datetime(2025, 8, 10, 13, 0)
+        monthly_event_3_start = datetime(2025, 8, 15, 17, 0)
+        monthly_event_4_start = datetime(2025, 8, 22, 11, 0)
+        monthly_event_5_start = datetime(2025, 8, 28, 20, 0)
 
         # Events — duration is in minutes
         db.add_all([
@@ -378,6 +387,67 @@ def seed():
                 user_id=organizer.id, reviewer_id=admin.id,
                 tags=[social],
             ),
+            # Monthly recurring events — for testing "Monthly" repeat display and long-window occurrence math
+            Event(
+                name="monthly_event_1",
+                description="Monthly-recurring test event, first of the month.",
+                location="MC Courtyard",
+                lat=43.4725, lng=-80.5436,
+                start_time=monthly_event_1_start,
+                duration=60,
+                schedule=monthly_schedule(monthly_event_1_start),
+                frequency_end=None,
+                user_id=organizer.id, reviewer_id=admin.id,
+                tags=[academic],
+            ),
+            Event(
+                name="monthly_event_2",
+                description="Monthly-recurring test event, mid-month slot.",
+                location="DC Atrium",
+                lat=43.4723, lng=-80.5449,
+                start_time=monthly_event_2_start,
+                duration=60,
+                schedule=monthly_schedule(monthly_event_2_start),
+                frequency_end=None,
+                user_id=organizer.id, reviewer_id=admin.id,
+                tags=[engineering],
+            ),
+            Event(
+                name="monthly_event_3",
+                description="Monthly-recurring test event, afternoon slot.",
+                location="SLC Great Hall",
+                lat=43.4745, lng=-80.5525,
+                start_time=monthly_event_3_start,
+                duration=60,
+                schedule=monthly_schedule(monthly_event_3_start),
+                frequency_end=None,
+                user_id=organizer.id, reviewer_id=admin.id,
+                tags=[social],
+            ),
+            Event(
+                name="monthly_event_4",
+                description="Monthly-recurring test event, late-month slot.",
+                location="PAC Fieldhouse",
+                lat=43.4754, lng=-80.5503,
+                start_time=monthly_event_4_start,
+                duration=60,
+                schedule=monthly_schedule(monthly_event_4_start),
+                frequency_end=None,
+                user_id=organizer.id, reviewer_id=admin.id,
+                tags=[sports],
+            ),
+            Event(
+                name="monthly_event_5",
+                description="Monthly-recurring test event, evening slot with an end date.",
+                location="EV3 Foyer",
+                lat=43.4700, lng=-80.5454,
+                start_time=monthly_event_5_start,
+                duration=60,
+                schedule=monthly_schedule(monthly_event_5_start),
+                frequency_end=date(2027, 12, 31),
+                user_id=organizer.id, reviewer_id=admin.id,
+                tags=[volunteer],
+            ),
             # Pending events
             Event(
                 name="Intramural Soccer Signup",
@@ -441,7 +511,7 @@ def seed():
             ),
         ])
         db.commit()
-        print("Seeded: 3 users, 6 tags, 29 events (24 approved, 5 pending); 5 daily-recurring, rest weekly-recurring.")
+        print("Seeded: 3 users, 6 tags, 34 events (29 approved, 5 pending); 5 daily-recurring, 5 monthly-recurring, rest weekly-recurring.")
     finally:
         db.close()
 
