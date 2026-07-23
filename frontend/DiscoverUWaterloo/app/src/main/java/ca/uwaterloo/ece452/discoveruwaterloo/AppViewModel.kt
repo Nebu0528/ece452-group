@@ -80,8 +80,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     val plannerEventsForSelectedDay: StateFlow<List<Event>> =
         combine(plannerEvents, _selectedPlannerDate) { events, day ->
-            events.filter { it.startCalendar()?.isSameDay(day) == true }
-                .sortedBy { it.startTime }
+            events.filter { it.nextOccurrenceStartCalendar()?.isSameDay(day) == true }
+                .sortedBy { it.nextOccurrenceStart }
         }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     private val _error = MutableStateFlow<String?>(null)

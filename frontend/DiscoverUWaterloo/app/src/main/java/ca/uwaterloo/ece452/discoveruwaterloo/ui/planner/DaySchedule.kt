@@ -15,7 +15,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import ca.uwaterloo.ece452.discoveruwaterloo.data.Event
-import ca.uwaterloo.ece452.discoveruwaterloo.data.formattedStartTime
+import ca.uwaterloo.ece452.discoveruwaterloo.data.nextOccurrenceDisplay
 import ca.uwaterloo.ece452.discoveruwaterloo.data.startCalendar
 import java.util.Calendar
 
@@ -161,7 +161,7 @@ private fun ScheduleEventBlock(event: Event, onClick: () -> Unit, modifier: Modi
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            event.formattedStartTime()?.let {
+            event.nextOccurrenceDisplay()?.let {
                 Text(
                     it,
                     style = MaterialTheme.typography.labelSmall,
