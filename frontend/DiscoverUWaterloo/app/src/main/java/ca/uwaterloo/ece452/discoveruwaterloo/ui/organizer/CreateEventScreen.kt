@@ -26,6 +26,8 @@ import androidx.compose.ui.window.DialogProperties
 import ca.uwaterloo.ece452.discoveruwaterloo.AppViewModel
 import ca.uwaterloo.ece452.discoveruwaterloo.data.Event
 import ca.uwaterloo.ece452.discoveruwaterloo.data.EventStatus
+import ca.uwaterloo.ece452.discoveruwaterloo.data.RepeatOption
+import ca.uwaterloo.ece452.discoveruwaterloo.data.cronForRepeatOption
 import kotlinx.coroutines.launch
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
@@ -39,6 +41,13 @@ import java.util.Locale
 import java.util.TimeZone
 
 private val UWATERLOO = GeoPoint(43.4723, -80.5448)
+
+private val REPEAT_LABELS = linkedMapOf(
+    RepeatOption.NONE to "Does not repeat",
+    RepeatOption.DAILY to "Daily",
+    RepeatOption.WEEKLY to "Weekly",
+    RepeatOption.MONTHLY to "Monthly"
+)
 
 @Composable
 fun CreateEventScreen(viewModel: AppViewModel) {
@@ -75,6 +84,7 @@ private fun CreateEventForm(viewModel: AppViewModel) {
     var locationError by remember { mutableStateOf(false) }
     var startTimeError by remember { mutableStateOf(false) }
     var durationError by remember { mutableStateOf(false) }
+    var frequencyEndError by remember { mutableStateOf(false) }
     var showMapPicker by remember { mutableStateOf(false) }
 
     val availableTags by viewModel.availableTags.collectAsState()
@@ -85,10 +95,15 @@ private fun CreateEventForm(viewModel: AppViewModel) {
 
     var startTime by remember { mutableStateOf<String?>(null) }
     var durationText by remember { mutableStateOf("") }
+    var repeatOption by remember { mutableStateOf(RepeatOption.NONE) }
+    var repeatExpanded by remember { mutableStateOf(false) }
+    var frequencyEndDate by remember { mutableStateOf<String?>(null) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
+    var showFrequencyEndPicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
     val timePickerState = rememberTimePickerState(is24Hour = false)
+    val frequencyEndPickerState = rememberDatePickerState()
 
     remember {
         Configuration.getInstance().load(context, context.getSharedPreferences("osmdroid", Context.MODE_PRIVATE))
@@ -137,6 +152,29 @@ private fun CreateEventForm(viewModel: AppViewModel) {
         )
     }
 
+    if (showFrequencyEndPicker) {
+        DatePickerDialog(
+            onDismissRequest = { showFrequencyEndPicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    showFrequencyEndPicker = false
+                    val millis = frequencyEndPickerState.selectedDateMillis
+                    if (millis != null) {
+                        val cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+                        cal.timeInMillis = millis
+                        frequencyEndDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(cal.time)
+                        frequencyEndError = false
+                    }
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showFrequencyEndPicker = false }) { Text("Cancel") }
+            }
+        ) {
+            DatePicker(state = frequencyEndPickerState)
+        }
+    }
+
     if (showMapPicker) {
         LocationPickerDialog(
             initialPoint = selectedPoint,
@@ -158,11 +196,22 @@ private fun CreateEventForm(viewModel: AppViewModel) {
                         val validLocation = locationLabel.isNotBlank()
                         val validStartTime = startTime != null
                         val validDuration = durationText.toIntOrNull() != null
+                        val startDateOnly = startTime?.substring(0, 10)
+                        val validFrequencyEnd = frequencyEndDate == null || startDateOnly == null ||
+                            frequencyEndDate!! >= startDateOnly
                         nameError = !validName
                         locationError = !validLocation
                         startTimeError = !validStartTime
                         durationError = !validDuration
-                        if (!validName || !validLocation || !validStartTime || !validDuration) return@Button
+                        frequencyEndError = !validFrequencyEnd
+                        if (!validName || !validLocation || !validStartTime || !validDuration || !validFrequencyEnd) return@Button
+
+                        val schedule = startTime?.let { iso ->
+                            val startCal = Calendar.getInstance().apply {
+                                time = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).parse(iso)!!
+                            }
+                            cronForRepeatOption(repeatOption, startCal)
+                        }
 
                         viewModel.createEvent(
                             name = name.trim(),
@@ -172,6 +221,8 @@ private fun CreateEventForm(viewModel: AppViewModel) {
                             lng = selectedPoint?.longitude,
                             startTime = startTime!!,
                             duration = durationText.toInt(),
+                            schedule = schedule,
+                            frequencyEnd = frequencyEndDate,
                             tagIds = selectedTagIds.toList(),
                             onError = { msg -> scope.launch { snackbarHostState.showSnackbar(msg) } }
                         )
@@ -183,8 +234,11 @@ private fun CreateEventForm(viewModel: AppViewModel) {
                         selectedTagIds = emptySet()
                         startTime = null
                         durationText = ""
+                        repeatOption = RepeatOption.NONE
+                        frequencyEndDate = null
                         startTimeError = false
                         durationError = false
+                        frequencyEndError = false
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -331,6 +385,77 @@ private fun CreateEventForm(viewModel: AppViewModel) {
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
+
+            ExposedDropdownMenuBox(
+                expanded = repeatExpanded,
+                onExpandedChange = { repeatExpanded = it }
+            ) {
+                OutlinedTextField(
+                    value = REPEAT_LABELS.getValue(repeatOption),
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Repeats") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = repeatExpanded) },
+                    modifier = Modifier
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                        .fillMaxWidth()
+                )
+                ExposedDropdownMenu(
+                    expanded = repeatExpanded,
+                    onDismissRequest = { repeatExpanded = false }
+                ) {
+                    REPEAT_LABELS.forEach { (option, label) ->
+                        DropdownMenuItem(
+                            text = { Text(label) },
+                            onClick = {
+                                repeatOption = option
+                                repeatExpanded = false
+                                if (option == RepeatOption.NONE) {
+                                    frequencyEndDate = null
+                                    frequencyEndError = false
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+
+            if (repeatOption != RepeatOption.NONE) {
+                val frequencyEndDisplay = frequencyEndDate?.let {
+                    runCatching {
+                        val display = SimpleDateFormat("MMM d, yyyy", Locale.getDefault())
+                        display.format(SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it)!!)
+                    }.getOrDefault(it)
+                }
+                OutlinedTextField(
+                    value = frequencyEndDisplay ?: "",
+                    onValueChange = {},
+                    label = { Text("Repeat until (optional)") },
+                    placeholder = { Text("Tap calendar to pick") },
+                    readOnly = true,
+                    isError = frequencyEndError,
+                    supportingText = if (frequencyEndError) ({ Text("Repeat until must be on or after the start date") }) else null,
+                    trailingIcon = {
+                        IconButton(onClick = { showFrequencyEndPicker = true }) {
+                            Icon(
+                                Icons.Default.CalendarToday,
+                                contentDescription = "Pick repeat-until date",
+                                tint = if (frequencyEndError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+                if (frequencyEndDate != null) {
+                    TextButton(
+                        onClick = { frequencyEndDate = null },
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                    ) {
+                        Text("Clear repeat-until date", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                    }
+                }
+            }
 
             OutlinedTextField(
                 value = description,

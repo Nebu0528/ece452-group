@@ -39,11 +39,15 @@ import org.osmdroid.events.MapEventsReceiver
 
 @Composable
 fun MapScreen(viewModel: AppViewModel) {
-    val filteredEvents by viewModel.filteredEvents.collectAsState()
+    val mapEvents by viewModel.mapEvents.collectAsState()
     val plannerEvents by viewModel.plannerEvents.collectAsState()
-    
+
+    LaunchedEffect(Unit) {
+        viewModel.refreshEvents()
+    }
+
     var showOnlyMyEvents by remember { mutableStateOf(false) }
-    val eventsToDisplay = if (showOnlyMyEvents) plannerEvents else filteredEvents
+    val eventsToDisplay = if (showOnlyMyEvents) plannerEvents else mapEvents
     
     val context = LocalContext.current
 
