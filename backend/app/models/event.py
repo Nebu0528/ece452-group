@@ -1,5 +1,5 @@
 import enum
-from sqlalchemy import Column, Integer, String, ForeignKey, Table, Float, DateTime, Enum as SAEnum
+from sqlalchemy import Column, Integer, String, ForeignKey, Table, Float, DateTime, Date, Enum as SAEnum
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -36,6 +36,7 @@ class Event(Base):
     start_time = Column(DateTime, nullable=True)
     duration = Column(Integer, nullable=True)
     schedule = Column(String, nullable=True)
+    frequency_end = Column(Date, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     reviewer_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     status = Column(SAEnum(EventStatus, values_callable=lambda x: [e.value for e in x]), default=EventStatus.PENDING, nullable=False, server_default="pending")
