@@ -336,7 +336,7 @@ def seed():
                 duration=45,
                 schedule=daily_schedule(daily_event_1_start),
                 frequency_end=None,
-                user_id=organizer.id, reviewer_id=admin.id,
+                user_id=organizer.id, reviewer_id=admin.id, status=EventStatus.APPROVED,
                 tags=[social],
             ),
             Event(
@@ -348,7 +348,7 @@ def seed():
                 duration=45,
                 schedule=daily_schedule(daily_event_2_start),
                 frequency_end=None,
-                user_id=organizer.id, reviewer_id=admin.id,
+                user_id=organizer.id, reviewer_id=admin.id, status=EventStatus.APPROVED,
                 tags=[academic],
             ),
             Event(
@@ -360,7 +360,7 @@ def seed():
                 duration=45,
                 schedule=daily_schedule(daily_event_3_start),
                 frequency_end=None,
-                user_id=organizer.id, reviewer_id=admin.id,
+                user_id=organizer.id, reviewer_id=admin.id, status=EventStatus.APPROVED,
                 tags=[sports],
             ),
             Event(
@@ -372,7 +372,7 @@ def seed():
                 duration=45,
                 schedule=daily_schedule(daily_event_4_start),
                 frequency_end=None,
-                user_id=organizer.id, reviewer_id=admin.id,
+                user_id=organizer.id, reviewer_id=admin.id, status=EventStatus.APPROVED,
                 tags=[engineering],
             ),
             Event(
@@ -384,7 +384,7 @@ def seed():
                 duration=45,
                 schedule=daily_schedule(daily_event_5_start),
                 frequency_end=None,
-                user_id=organizer.id, reviewer_id=admin.id,
+                user_id=organizer.id, reviewer_id=admin.id, status=EventStatus.APPROVED,
                 tags=[social],
             ),
             # Monthly recurring events — for testing "Monthly" repeat display and long-window occurrence math
@@ -397,7 +397,7 @@ def seed():
                 duration=60,
                 schedule=monthly_schedule(monthly_event_1_start),
                 frequency_end=None,
-                user_id=organizer.id, reviewer_id=admin.id,
+                user_id=organizer.id, reviewer_id=admin.id, status=EventStatus.APPROVED,
                 tags=[academic],
             ),
             Event(
@@ -409,7 +409,7 @@ def seed():
                 duration=60,
                 schedule=monthly_schedule(monthly_event_2_start),
                 frequency_end=None,
-                user_id=organizer.id, reviewer_id=admin.id,
+                user_id=organizer.id, reviewer_id=admin.id, status=EventStatus.APPROVED,
                 tags=[engineering],
             ),
             Event(
@@ -421,7 +421,7 @@ def seed():
                 duration=60,
                 schedule=monthly_schedule(monthly_event_3_start),
                 frequency_end=None,
-                user_id=organizer.id, reviewer_id=admin.id,
+                user_id=organizer.id, reviewer_id=admin.id, status=EventStatus.APPROVED,
                 tags=[social],
             ),
             Event(
@@ -433,7 +433,7 @@ def seed():
                 duration=60,
                 schedule=monthly_schedule(monthly_event_4_start),
                 frequency_end=None,
-                user_id=organizer.id, reviewer_id=admin.id,
+                user_id=organizer.id, reviewer_id=admin.id, status=EventStatus.APPROVED,
                 tags=[sports],
             ),
             Event(
@@ -445,7 +445,7 @@ def seed():
                 duration=60,
                 schedule=monthly_schedule(monthly_event_5_start),
                 frequency_end=date(2027, 12, 31),
-                user_id=organizer.id, reviewer_id=admin.id,
+                user_id=organizer.id, reviewer_id=admin.id, status=EventStatus.APPROVED,
                 tags=[volunteer],
             ),
             # Pending events
