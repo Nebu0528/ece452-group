@@ -45,8 +45,15 @@ class EventRepository(private val api: ApiService, private val db: EventDatabase
     fun getEvents(): Flow<List<Event>> =
         db.eventDao().getAllEvents().map { list -> list.map { it.toEvent() } }
 
-    suspend fun createEvent(name: String, description: String?, location: String?, lat: Double?, lng: Double?, startTime: String, duration: Int, tagIds: List<Int>, token: String): Event =
-        api.createEvent(EventCreateRequest(name, description, location, lat, lng, startTime, duration, tagIds), "Bearer $token").toEvent()
+    suspend fun createEvent(
+        name: String, description: String?, location: String?, lat: Double?, lng: Double?,
+        startTime: String, duration: Int, schedule: String?, frequencyEnd: String?,
+        tagIds: List<Int>, token: String
+    ): Event =
+        api.createEvent(
+            EventCreateRequest(name, description, location, lat, lng, startTime, duration, schedule, frequencyEnd, tagIds),
+            "Bearer $token"
+        ).toEvent()
 
     suspend fun deleteEvent(id: Int, token: String) = api.deleteEvent(id, "Bearer $token")
 
@@ -66,6 +73,8 @@ private fun EventResponse.toEntity() = EventEntity(
     id = id, name = name, description = description, location = location,
     lat = lat, lng = lng, date = null, startTime = startTime,
     duration = duration,
+    schedule = schedule, frequencyEnd = frequencyEnd,
+    nextOccurrenceStart = nextOccurrenceStart, nextOccurrenceEnd = nextOccurrenceEnd,
     userId = userId, reviewerId = reviewerId,
     status = status.uppercase(),
     organizerName = organizerName,
@@ -77,6 +86,8 @@ private fun EventEntity.toEvent() = Event(
     id = id, name = name, description = description, location = location,
     locationCoords = if (lat != null && lng != null) EventLocation(lat, lng) else null,
     date = date, startTime = startTime, duration = duration,
+    schedule = schedule, frequencyEnd = frequencyEnd,
+    nextOccurrenceStart = nextOccurrenceStart, nextOccurrenceEnd = nextOccurrenceEnd,
     userId = userId, reviewerId = reviewerId,
     status = runCatching { EventStatus.valueOf(status) }.getOrDefault(EventStatus.PENDING),
     organizerName = organizerName,
@@ -89,6 +100,8 @@ private fun EventResponse.toEvent() = Event(
     locationCoords = if (lat != null && lng != null) EventLocation(lat, lng) else null,
     date = null, startTime = startTime,
     duration = duration,
+    schedule = schedule, frequencyEnd = frequencyEnd,
+    nextOccurrenceStart = nextOccurrenceStart, nextOccurrenceEnd = nextOccurrenceEnd,
     userId = userId, reviewerId = reviewerId,
     status = runCatching { EventStatus.valueOf(status.uppercase()) }.getOrDefault(EventStatus.PENDING),
     organizerName = organizerName,
