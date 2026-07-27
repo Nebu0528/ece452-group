@@ -3,3 +3,4 @@
 Jul 27 Mon
 [Antarpreet]: Implemented security fixes and event status lifecycle — server-side email domain validation, role-based event filtering, reject endpoint, delete ownership enforcement, organizer "My Events" tab, and organizer name on admin pending cards.
 [Neel]: Coordinated a time with the team to prepare a demo and trailer video for the bonus section. Working on the notifications feature of the app.
+[Sadiq]: Met with team to create demo video and trailer.
